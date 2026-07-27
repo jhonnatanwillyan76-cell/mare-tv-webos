@@ -1,0 +1,596 @@
+/* ============================================================
+   Maré TV — LG webOS
+   CSS puro, sem pré-processador e sem variáveis CSS (custom
+   properties não existem no Chromium do webOS 3 / Chrome 38),
+   por isso as cores aparecem repetidas em hexadecimal.
+
+   Design system "Maré TV" (shadcn dark + teal):
+   - fundo:             #0a0a0b
+   - card:               #131317
+   - elevado/hover-foco: #1f1f26
+   - borda fina:         #27272c (1px)
+   - texto:              #fafafa
+   - texto secundário:   #9ca3ad
+   - destaque (teal):    #17b3a6
+   - texto sobre teal:   #04231f
+   - erro:               #ef4444
+
+   Foco de controle (inputs, chips, cards, botão): borda/anel
+   teal + leve scale(1.02) + fundo elevado #1f1f26. O "anel" de
+   3px é feito com box-shadow (não altera o box model, então
+   nunca empurra os elementos vizinhos) em vez de engrossar a
+   borda real — a borda real fica sempre com 1px, só muda de cor.
+
+   Observação sobre "gap" em flexbox: o Chrome 38 (webOS 3) NÃO
+   suporta a propriedade "gap" em flex containers. Ela é mantida
+   aqui só para o preview ficar correto em navegadores modernos
+   (teste no PC, ver README.md) — o espaçamento que também
+   funciona na TV real vem sempre de "margin" explícita nos itens
+   (comentários "fallback" abaixo).
+   ============================================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html, body {
+  width: 1920px;
+  height: 1080px;
+  background: #0a0a0b;
+  color: #fafafa;
+  font-family: system-ui, "Segoe UI", Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+img {
+  border: 0;
+  -webkit-user-drag: none;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+.oculto {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------
+   Telas (cada uma ocupa a tela inteira; só uma fica visível)
+   ------------------------------------------------------------ */
+.tela {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 1920px;
+  height: 1080px;
+}
+
+/* ------------------------------------------------------------
+   Marca oficial "Maré TV" (logo_wide.png / icon.png)
+   ------------------------------------------------------------ */
+.marca-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marca-logo-img {
+  display: block;
+  width: 220px;
+  height: auto;
+}
+
+.marca-logo-img-pequena {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+}
+
+/* Selo "AO VIVO" — cabeçalho da Home e overlay do player */
+.pill-ao-vivo {
+  display: inline-block;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #04231f;
+  background: #17b3a6;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------
+   Indicador de carregamento (spinner CSS puro)
+   ------------------------------------------------------------ */
+.spinner {
+  display: inline-block;
+  width: 26px;
+  height: 26px;
+  border: 4px solid rgba(250, 250, 250, 0.18);
+  border-top-color: #17b3a6;
+  border-radius: 50%;
+  animation: girar 0.85s linear infinite;
+  vertical-align: middle;
+}
+
+.spinner--grande {
+  width: 64px;
+  height: 64px;
+  border-width: 6px;
+}
+
+@keyframes girar {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   TELA DE LOGIN
+   ============================================================ */
+.tela-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 30%, rgba(23, 179, 166, 0.10) 0%, rgba(10, 10, 11, 0) 60%), #0a0a0b;
+}
+
+.login-caixa {
+  width: 620px;
+  padding: 56px 64px;
+  background: #131317;
+  border: 1px solid #27272c;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.login-titulo {
+  margin-top: 20px;
+  font-size: 44px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: #fafafa;
+}
+
+.login-subtitulo {
+  margin-top: 10px;
+  font-size: 22px;
+  color: #9ca3ad;
+}
+
+.login-verificando {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  color: #9ca3ad;
+}
+/* fallback do "gap" acima pro Chrome 38 (itens em linha) */
+.login-verificando > span + span {
+  margin-left: 12px;
+}
+
+.login-form {
+  width: 100%;
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.campo-rotulo {
+  font-size: 13px;
+  font-weight: bold;
+  color: #fafafa;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  margin-top: 22px;
+}
+.campo-rotulo:first-child {
+  margin-top: 0;
+}
+
+.campo-entrada {
+  width: 100%;
+  height: 64px;
+  padding: 0 20px;
+  font-size: 24px;
+  color: #fafafa;
+  background: #0f0f12;
+  border: 1px solid #27272c;
+  border-radius: 10px;
+  outline: none;
+}
+
+.campo-entrada::-webkit-input-placeholder {
+  color: #9ca3ad;
+}
+
+.login-erro {
+  margin-top: 18px;
+  padding: 14px 16px;
+  font-size: 18px;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 8px;
+}
+
+.botao-entrar {
+  margin-top: 30px;
+  height: 66px;
+  width: 100%;
+  font-size: 24px;
+  font-weight: bold;
+  color: #04231f;
+  background: #17b3a6;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.login-dica {
+  margin-top: 26px;
+  font-size: 16px;
+  color: #9ca3ad;
+}
+
+/* ------------------------------------------------------------
+   Foco visível (essencial para navegação por controle remoto)
+   ------------------------------------------------------------ */
+.focavel {
+  transition: transform 0.12s ease, box-shadow 0.12s ease,
+              border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.campo-entrada.focado,
+.item-categoria.focado,
+.cartao-canal.focado {
+  border-color: #17b3a6;
+  background-color: #1f1f26;
+  box-shadow: 0 0 0 3px #17b3a6, 0 0 18px 2px rgba(23, 179, 166, 0.45);
+  transform: scale(1.02);
+}
+
+.botao-entrar.focado {
+  background: #1ecab9;
+  box-shadow: 0 0 0 3px #17b3a6, 0 0 18px 2px rgba(23, 179, 166, 0.45);
+  transform: scale(1.02);
+}
+
+/* ============================================================
+   TELA HOME
+   ============================================================ */
+.tela-home {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-cabecalho {
+  height: 96px;
+  min-height: 96px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  background: #0a0a0b;
+  border-bottom: 1px solid #27272c;
+}
+
+.home-marca-texto {
+  margin-left: 14px;
+  font-size: 26px;
+  font-weight: bold;
+  color: #fafafa;
+}
+
+.home-cabecalho .pill-ao-vivo {
+  margin-left: 16px;
+}
+
+.home-corpo {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* ---- Coluna de categorias (esquerda) — chips ---- */
+.coluna-categorias {
+  width: 340px;
+  min-width: 340px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px 20px;
+  background: #0a0a0b;
+  border-right: 1px solid #27272c;
+}
+
+.item-categoria {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 10px;
+  font-size: 21px;
+  font-weight: bold;
+  color: #9ca3ad;
+  background: #131317;
+  border: 1px solid #27272c;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-categoria.selecionada {
+  color: #17b3a6;
+  background: rgba(23, 179, 166, 0.12);
+  border-color: rgba(23, 179, 166, 0.35);
+}
+
+.item-categoria.focado {
+  color: #fafafa;
+}
+
+/* ---- Grade de canais (direita) — cards ---- */
+.coluna-canais-wrap {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+}
+
+.grade-canais {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 28px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+}
+
+/* 4 colunas fixas — o valor de GRID_COLUNAS em js/app.js TEM que
+   bater com este número (340px * 4 + 20px * 3 cabe com folga em
+   1920 - 340 de coluna de categorias). Se mudar aqui, mude lá. */
+.cartao-canal {
+  width: 340px;
+  height: 172px;
+  margin: 0 20px 20px 0;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #131317;
+  border: 1px solid #27272c;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.cartao-canal:nth-child(4n) {
+  margin-right: 0;
+}
+
+.cartao-canal-logo {
+  max-width: 100%;
+  max-height: 64px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.cartao-canal-nome {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fafafa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.cartao-canal-categoria {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #9ca3ad;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.cartao-canal.sem-logo::before {
+  content: attr(data-inicial);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: rgba(23, 179, 166, 0.18);
+  color: #17b3a6;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* ---- Mensagens de estado (carregando / erro / vazio) ---- */
+.home-mensagem {
+  position: absolute;
+  left: 340px;
+  right: 0;
+  top: 96px;
+  bottom: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 22px;
+  color: #9ca3ad;
+  text-align: center;
+  padding: 40px;
+}
+
+/* fallback do "gap" acima pro Chrome 38 (itens em coluna) */
+.home-carregando span + span {
+  margin-top: 14px;
+}
+
+.home-erro-texto,
+#home-erro-texto {
+  color: #ef4444;
+  max-width: 640px;
+}
+
+/* o botão "Tentar novamente" herda .botao-entrar (largura 100%
+   do formulário de login) — aqui, dentro da mensagem de estado
+   bem mais larga, ele precisa de uma largura própria */
+#home-erro-botao {
+  width: auto;
+  min-width: 280px;
+  padding: 0 40px;
+}
+
+/* ---- Rodapé discreto com dicas de teclas ---- */
+.home-rodape {
+  height: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0b;
+  border-top: 1px solid #27272c;
+  font-size: 14px;
+  color: #9ca3ad;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+/* ============================================================
+   TELA PLAYER
+   ============================================================ */
+.tela-player {
+  background: #000000;
+}
+
+.video-player {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  background: #000000;
+  object-fit: contain;
+}
+
+.player-carregando {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0 56px 48px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.player-overlay.visivel {
+  opacity: 1;
+}
+
+.player-overlay-faixa {
+  padding-top: 140px;
+}
+
+.player-overlay-linha {
+  display: flex;
+  align-items: center;
+}
+
+.player-overlay-linha .pill-ao-vivo {
+  margin-left: 18px;
+}
+
+.player-overlay-nome {
+  font-size: 40px;
+  font-weight: bold;
+  color: #fafafa;
+}
+
+.player-overlay-categoria {
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #9ca3ad;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.player-erro {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 11, 0.92);
+}
+
+.player-erro-cartao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 56px;
+  background: #131317;
+  border: 1px solid #27272c;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.player-erro-titulo {
+  font-size: 34px;
+  font-weight: bold;
+  color: #ef4444;
+}
+
+.player-erro-dica {
+  margin-top: 10px;
+  font-size: 20px;
+  color: #9ca3ad;
+}

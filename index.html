@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080, initial-scale=1.0, user-scalable=no">
+<title>Maré TV</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     TELA 1 — LOGIN
+     Campos de usuário/senha usam <input> nativo: ao focar (via
+     controle remoto) o teclado virtual da LG abre sozinho.
+     ============================================================ -->
+<section id="tela-login" class="tela tela-login">
+  <div class="login-caixa">
+
+    <div class="marca-logo" aria-hidden="true">
+      <img class="marca-logo-img" src="logo_wide.png" alt="">
+    </div>
+
+    <h1 class="login-titulo">Maré TV</h1>
+    <p class="login-subtitulo">Entre com sua conta para assistir ao vivo</p>
+
+    <div id="login-verificando" class="login-verificando oculto">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Verificando sua sessão…</span>
+    </div>
+
+    <div id="login-form" class="login-form">
+      <label class="campo-rotulo" for="campo-usuario">Usuário</label>
+      <input id="campo-usuario" class="campo-entrada focavel" type="text"
+             tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+
+      <label class="campo-rotulo" for="campo-senha">Senha</label>
+      <input id="campo-senha" class="campo-entrada focavel" type="password"
+             tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+
+      <p id="login-erro" class="login-erro oculto"></p>
+
+      <button id="botao-entrar" type="button" class="botao-entrar focavel" tabindex="-1">
+        Entrar
+      </button>
+    </div>
+
+    <p class="login-dica">Use as setas do controle para navegar e OK para confirmar</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     TELA 2 — HOME (categorias + grade de canais)
+     ============================================================ -->
+<section id="tela-home" class="tela tela-home oculto">
+  <header class="home-cabecalho">
+    <div class="marca-logo marca-logo--pequena" aria-hidden="true">
+      <img class="marca-logo-img-pequena" src="icon.png" alt="">
+    </div>
+    <span class="home-marca-texto">Maré TV</span>
+    <span class="pill-ao-vivo">AO VIVO</span>
+  </header>
+
+  <div class="home-corpo">
+    <nav id="lista-categorias" class="coluna-categorias" aria-label="Categorias"></nav>
+
+    <div class="coluna-canais-wrap">
+      <div id="grade-canais" class="grade-canais"></div>
+      <p id="home-vazio" class="home-mensagem oculto">Nenhum canal encontrado nesta categoria.</p>
+    </div>
+  </div>
+
+  <div id="home-carregando" class="home-mensagem home-carregando oculto">
+    <span class="spinner" aria-hidden="true"></span>
+    <span>Carregando canais…</span>
+  </div>
+
+  <div id="home-erro" class="home-mensagem home-erro oculto">
+    <p id="home-erro-texto">Não foi possível carregar os canais.</p>
+    <button id="home-erro-botao" type="button" class="botao-entrar focavel" tabindex="-1">Tentar novamente</button>
+  </div>
+
+  <footer class="home-rodape">◀ ▶ ▲ ▼ para navegar · OK para assistir</footer>
+</section>
+
+<!-- ============================================================
+     TELA 3 — PLAYER (vídeo fullscreen)
+     ============================================================ -->
+<section id="tela-player" class="tela tela-player oculto">
+  <video id="video-player" class="video-player" autoplay playsinline>
+    <source id="video-fonte" src="" type="application/x-mpegURL">
+  </video>
+
+  <div id="player-carregando" class="player-carregando oculto">
+    <span class="spinner spinner--grande" aria-hidden="true"></span>
+  </div>
+
+  <div id="player-overlay" class="player-overlay">
+    <div class="player-overlay-faixa">
+      <div class="player-overlay-linha">
+        <div class="player-overlay-nome" id="player-nome-canal"></div>
+        <span class="pill-ao-vivo">AO VIVO</span>
+      </div>
+      <div class="player-overlay-categoria" id="player-categoria-canal"></div>
+    </div>
+  </div>
+
+  <div id="player-erro" class="player-erro oculto">
+    <div class="player-erro-cartao">
+      <p class="player-erro-titulo">Canal indisponível</p>
+      <p class="player-erro-dica">Pressione VOLTAR para escolher outro canal</p>
+    </div>
+  </div>
+</section>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
