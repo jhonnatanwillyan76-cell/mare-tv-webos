@@ -48,7 +48,7 @@
   var ROTULO_MAIS_ASSISTIDOS = 'Mais Assistidos';
   // Versão do app (igual ao appinfo.json/ipk) — comparada com lg_min_version
   // pra decidir a atualização OBRIGATÓRIA. BUMPE junto do ipk.
-  var APP_VERSION = '1.0.1';
+  var APP_VERSION = '1.0.2';
   var CHAVE_DEVICE = 'maretv_webos_device';
   var TEMPO_POLL_PAGAMENTO_MS = 4000;
   var TEMPO_POLL_CONFIG_MS = 60000;

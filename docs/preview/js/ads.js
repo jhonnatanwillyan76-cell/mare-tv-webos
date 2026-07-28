@@ -115,11 +115,16 @@ var MareAds = (function () {
     }
   }
 
-  var SHRINK = { lshape: true, split: true, squeeze: true };
+  // Formatos que ficam ATRÁS do vídeo (vídeo encolhe e revela).
+  var BEHIND = { split: true, squeeze: true };
+  // Formatos que REDIMENSIONAM o vídeo (encolhe/aumenta). L-Shape agora fica
+  // MAIOR e o "L" do anúncio vai na FRENTE cobrindo as bordas (ver .ad-lshape).
+  var RESIZE = { lshape: true, split: true, squeeze: true };
 
   // Retângulo do VÍDEO por formato (em 1920x1080).
   function videoRect(fmt) {
-    if (fmt === 'lshape') { return { l: 0, t: 0, w: 1421, h: 800 }; }
+    // L-Shape: vídeo grande no topo-esquerda; passa um pouco por baixo do "L".
+    if (fmt === 'lshape') { return { l: 0, t: 0, w: 1632, h: 950 }; }
     if (fmt === 'split') { return { l: 0, t: 0, w: 1114, h: 1080 }; }
     if (fmt === 'squeeze') { return { l: 250, t: 97, w: 1420, h: 886 }; }
     return { l: 0, t: 0, w: 1920, h: 1080 }; // cheio (overlay/lower_third)
@@ -158,8 +163,8 @@ var MareAds = (function () {
     lastShown[a.id] = nowMs();
 
     var fmt = a.format || 'overlay';
-    var isShrink = SHRINK[fmt] === true;
-    var host = isShrink ? els.behind : els.front;
+    // L-Shape/overlay/lower_third ficam NA FRENTE; split/squeeze ficam atrás.
+    var host = BEHIND[fmt] ? els.behind : els.front;
 
     // posiciona a caixa do anúncio conforme o formato
     var box = els.box;
@@ -167,11 +172,10 @@ var MareAds = (function () {
     box.innerHTML = '';
     box.appendChild(buildCreative(a));
 
-    // move a caixa pro host certo (atrás pra shrink, na frente pros overlays)
     if (box.parentNode !== host) { host.appendChild(box); }
 
-    // entra suave
-    if (isShrink) { applyVideoRect(videoRect(fmt), true); }
+    // formatos que mexem no tamanho do vídeo
+    if (RESIZE[fmt]) { applyVideoRect(videoRect(fmt), true); }
     // força reflow p/ animar a opacidade/scale
     /* jshint ignore:start */
     void box.offsetWidth;

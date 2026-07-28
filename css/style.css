@@ -864,11 +864,19 @@ input {
   background: #0a0a0b;
 }
 
-/* SHRINK: a caixa cobre a tela toda; o vídeo encolhido revela o anúncio. */
-.ad-lshape, .ad-split, .ad-squeeze {
+/* BEHIND (split/squeeze): a caixa cobre a tela toda ATRÁS do vídeo. */
+.ad-split, .ad-squeeze {
   left: 0; top: 0; width: 1920px; height: 1080px;
 }
 .ad-squeeze .ad-media { object-fit: contain; }
+
+/* L-SHAPE: cobre a tela toda NA FRENTE, recortada em "L" (coluna direita +
+   faixa inferior). O vídeo fica maior e some um pouco por baixo do L. */
+.ad-lshape {
+  left: 0; top: 0; width: 1920px; height: 1080px;
+  -webkit-clip-path: polygon(1536px 0, 1920px 0, 1920px 1080px, 0 1080px, 0 886px, 1536px 886px);
+  clip-path: polygon(1536px 0, 1920px 0, 1920px 1080px, 0 1080px, 0 886px, 1536px 886px);
+}
 
 /* OVERLAY: cartão no canto inferior direito, por cima do vídeo. */
 .ad-overlay {
