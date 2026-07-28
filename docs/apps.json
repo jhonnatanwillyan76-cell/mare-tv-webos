@@ -14,18 +14,18 @@
       "pool": "main",
       "manifest": {
         "id": "com.maretv.app",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "type": "web",
         "title": "Maré TV",
         "appDescription": "IPTV ao vivo da Maré TV para Smart TVs LG (webOS).",
         "iconUri": "https://raw.githubusercontent.com/jhonnatanwillyan76-cell/mare-tv-webos/main/largeIcon.png",
         "sourceUrl": "https://github.com/jhonnatanwillyan76-cell/mare-tv-webos",
-        "ipkUrl": "com.maretv.app_1.0.1_all.ipk",
+        "ipkUrl": "com.maretv.app_1.0.2_all.ipk",
         "ipkHash": {
-          "sha256": "2605551eb34fed1b67181252c081bae977f377427a70ab5db3934d935fc30543"
+          "sha256": "832c0730c5f414042017992d76b753971d2328e50c8bfcdb062ad102dc20b8ec"
         },
-        "ipkSize": 49996,
-        "installedSize": 91451
+        "ipkSize": 50136,
+        "installedSize": 91857
       },
       "shortDescription": "IPTV ao vivo da Maré TV para Smart TVs LG (webOS).",
       "fullDescriptionUrl": "apps/com.maretv.app/full_description.html"
