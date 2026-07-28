@@ -1120,12 +1120,7 @@
     atualizarTextoPlano();
 
     var c = estado.config || {};
-    if (c.simulate === true) {
-      refs.botaoSimular.classList.remove('oculto');
-    } else {
-      refs.botaoSimular.classList.add('oculto');
-    }
-    if (!c.pixEnabled && c.simulate !== true) {
+    if (!c.pixEnabled) {
       exibirErroPagamento('Pagamento indisponível no momento. Assine pelo site e entre com usuário e senha.');
     }
     aplicarFoco(refs.pagCpf);
@@ -1201,23 +1196,6 @@
     }
   }
 
-  function simularPagamento() {
-    var nome = (refs.pagNome.value || '').replace(/^\s+|\s+$/g, '');
-    refs.botaoSimular.textContent = 'Simulando…';
-    MareApi.simularPix(obterDeviceId(), nome).then(function (res) {
-      refs.botaoSimular.textContent = 'Simular pagamento (teste)';
-      var d = res.dados || {};
-      if (d.paid === true && d.username && d.password) {
-        sucessoPagamento(d.username, d.password);
-      } else {
-        exibirErroPagamento('Simulação indisponível.');
-      }
-    }).catch(function () {
-      refs.botaoSimular.textContent = 'Simular pagamento (teste)';
-      exibirErroPagamento('Sem conexão.');
-    });
-  }
-
   function sucessoPagamento(usuario, senha) {
     pararPollPagamento();
     estado.credenciais = { usuario: usuario, senha: senha };
@@ -1239,9 +1217,7 @@
     if (!refs.pagamentoQr.classList.contains('oculto')) {
       return [refs.botaoCancelarPix];
     }
-    var lista = [refs.pagNome, refs.pagCpf, refs.botaoGerarPix];
-    if (!refs.botaoSimular.classList.contains('oculto')) { lista.push(refs.botaoSimular); }
-    lista.push(refs.botaoVoltarLogin);
+    var lista = [refs.pagNome, refs.pagCpf, refs.botaoGerarPix, refs.botaoVoltarLogin];
     return lista;
   }
 
@@ -1318,7 +1294,6 @@
     refs.pagCpf = document.getElementById('pag-cpf');
     refs.pagamentoErro = document.getElementById('pagamento-erro');
     refs.botaoGerarPix = document.getElementById('botao-gerar-pix');
-    refs.botaoSimular = document.getElementById('botao-simular');
     refs.botaoVoltarLogin = document.getElementById('botao-voltar-login');
     refs.pagamentoQr = document.getElementById('pagamento-qr');
     refs.pagamentoValor = document.getElementById('pagamento-valor');
@@ -1343,7 +1318,6 @@
     refs.homeErroBotao.onclick = carregarCanais;
     refs.botaoAssinar.onclick = abrirPagamento;
     refs.botaoGerarPix.onclick = gerarPix;
-    refs.botaoSimular.onclick = simularPagamento;
     refs.botaoVoltarLogin.onclick = fecharPagamento;
     refs.botaoCancelarPix.onclick = fecharPagamento;
     refs.botaoManutencaoRetry.onclick = reverificarGate;
