@@ -42,6 +42,12 @@
       <button id="botao-entrar" type="button" class="botao-entrar focavel" tabindex="-1">
         Entrar
       </button>
+
+      <div class="login-ou"><span>ou</span></div>
+
+      <button id="botao-assinar" type="button" class="botao-secundario focavel" tabindex="-1">
+        Novo por aqui? Assinar
+      </button>
     </div>
 
     <p class="login-dica">Use as setas do controle para navegar e OK para confirmar</p>
@@ -86,9 +92,18 @@
      TELA 3 — PLAYER (vídeo fullscreen)
      ============================================================ -->
 <section id="tela-player" class="tela tela-player oculto">
+  <!-- Camada de anúncio ATRÁS do vídeo (formatos que encolhem: L-Shape,
+       Split, Squeeze). O vídeo encolhe e o anúncio aparece no espaço. -->
+  <div id="ad-behind" class="ad-layer ad-layer-behind">
+    <div id="ad-box" class="ad-box"></div>
+  </div>
+
   <video id="video-player" class="video-player" autoplay playsinline>
     <source id="video-fonte" src="" type="application/x-mpegURL">
   </video>
+
+  <!-- Camada de anúncio NA FRENTE do vídeo (overlay / lower third) -->
+  <div id="ad-front" class="ad-layer ad-layer-front"></div>
 
   <div id="player-carregando" class="player-carregando oculto">
     <span class="spinner spinner--grande" aria-hidden="true"></span>
@@ -112,6 +127,68 @@
   </div>
 </section>
 
+<!-- ============================================================
+     TELA — PAGAMENTO (assinar via PIX)
+     ============================================================ -->
+<section id="tela-pagamento" class="tela tela-pagamento oculto">
+  <div class="pagamento-caixa">
+    <div class="marca-logo" aria-hidden="true">
+      <img class="marca-logo-img" src="logo_wide.png" alt="">
+    </div>
+    <h1 class="pagamento-titulo">Assinar a Maré TV</h1>
+    <p class="pagamento-sub" id="pagamento-plano">Assine e assista ao vivo</p>
+
+    <div id="pagamento-form" class="pagamento-form">
+      <label class="campo-rotulo" for="pag-nome">Nome (opcional)</label>
+      <input id="pag-nome" class="campo-entrada focavel" type="text" tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+
+      <label class="campo-rotulo" for="pag-cpf">CPF (só números)</label>
+      <input id="pag-cpf" class="campo-entrada focavel" type="text" inputmode="numeric" tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+
+      <p id="pagamento-erro" class="login-erro oculto"></p>
+
+      <button id="botao-gerar-pix" type="button" class="botao-entrar focavel" tabindex="-1">Gerar PIX</button>
+      <button id="botao-simular" type="button" class="botao-secundario focavel oculto" tabindex="-1">Simular pagamento (teste)</button>
+      <button id="botao-voltar-login" type="button" class="botao-secundario focavel" tabindex="-1">Voltar ao login</button>
+    </div>
+
+    <div id="pagamento-qr" class="pagamento-qr oculto">
+      <p class="pagamento-valor" id="pagamento-valor"></p>
+      <div class="pagamento-qr-moldura">
+        <img id="pagamento-qr-img" class="pagamento-qr-img" alt="QR do PIX">
+      </div>
+      <p class="pagamento-instr">Abra o app do seu banco, escaneie o QR e pague.<br>A tela entra sozinha quando o pagamento for confirmado.</p>
+      <div class="pagamento-status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="pagamento-status-texto">Aguardando pagamento…</span>
+      </div>
+      <button id="botao-cancelar-pix" type="button" class="botao-secundario focavel" tabindex="-1">Cancelar</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TELAS DE BLOQUEIO — manutenção / atualização (config LG)
+     ============================================================ -->
+<section id="tela-manutencao" class="tela tela-bloqueio oculto">
+  <div class="bloqueio-caixa">
+    <div class="bloqueio-icone">🛠️</div>
+    <h1 class="bloqueio-titulo">Em manutenção</h1>
+    <p id="manutencao-msg" class="bloqueio-msg">Estamos melhorando a Maré TV. Voltamos já!</p>
+    <button id="botao-manutencao-retry" type="button" class="botao-entrar focavel" tabindex="-1">Verificar de novo</button>
+  </div>
+</section>
+
+<section id="tela-update" class="tela tela-bloqueio oculto">
+  <div class="bloqueio-caixa">
+    <div class="bloqueio-icone">⬆️</div>
+    <h1 class="bloqueio-titulo">Atualização necessária</h1>
+    <p id="update-msg" class="bloqueio-msg">Saiu uma versão nova da Maré TV. Atualize para continuar assistindo.</p>
+    <p id="update-store" class="bloqueio-link oculto"></p>
+    <button id="botao-update-retry" type="button" class="botao-entrar focavel" tabindex="-1">Já atualizei</button>
+  </div>
+</section>
+
 <!-- AMBIENTE DE TESTE (site no navegador): só FORA da TV (sem window.webOS)
      carrega o hls.js pra tocar os canais .m3u8 no Chrome de PC. Na TV real o
      <video> nativo já toca HLS, então isto nunca é injetado no app empacotado. -->
@@ -123,6 +200,7 @@
   }
 </script>
 <script src="js/api.js"></script>
+<script src="js/ads.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

@@ -46,6 +46,12 @@
   var CHAVE_CACHE_CANAIS = 'maretv_webos_canais_v2';
   // Rótulo do trilho curado (fica SEMPRE no topo, igual à TV/celular).
   var ROTULO_MAIS_ASSISTIDOS = 'Mais Assistidos';
+  // Versão do app (igual ao appinfo.json/ipk) — comparada com lg_min_version
+  // pra decidir a atualização OBRIGATÓRIA. BUMPE junto do ipk.
+  var APP_VERSION = '1.0.1';
+  var CHAVE_DEVICE = 'maretv_webos_device';
+  var TEMPO_POLL_PAGAMENTO_MS = 4000;
+  var TEMPO_POLL_CONFIG_MS = 60000;
 
   // --------------------------------------------------------
   // Estado global do app
@@ -75,6 +81,13 @@
       indiceAtual: -1,
       timerOverlay: null,
       timerCarregamento: null
+    },
+
+    config: {},           // /api/lg/config (plano/PIX + manutenção/update)
+    pagamento: {          // fluxo PIX
+      timer: null,
+      paymentId: null,
+      deviceId: null
     }
   };
 
@@ -85,19 +98,15 @@
   // Utilitários gerais
   // --------------------------------------------------------
 
+  // Esconde TODAS as telas e mostra a de id "tela-<nome>". Suporta:
+  // login | home | player | pagamento | manutencao | update.
   function mostrarTela(nome) {
-    refs.telaLogin.classList.add('oculto');
-    refs.telaHome.classList.add('oculto');
-    refs.telaPlayer.classList.add('oculto');
-
-    if (nome === 'login') {
-      refs.telaLogin.classList.remove('oculto');
-    } else if (nome === 'home') {
-      refs.telaHome.classList.remove('oculto');
-    } else if (nome === 'player') {
-      refs.telaPlayer.classList.remove('oculto');
+    var telas = document.getElementsByClassName('tela');
+    for (var i = 0; i < telas.length; i++) {
+      telas[i].classList.add('oculto');
     }
-
+    var alvo = document.getElementById('tela-' + nome);
+    if (alvo) { alvo.classList.remove('oculto'); }
     estado.telaAtual = nome;
   }
 
@@ -762,6 +771,7 @@
     estado.player.indiceAtual = indiceNaGrade;
 
     mostrarTela('player');
+    MareAds.setPlaying(true); // libera anúncios enquanto está no player
     definirCanalNoPlayer(canais[indiceNaGrade]);
   }
 
@@ -788,6 +798,7 @@
     refs.playerCarregando.classList.remove('oculto');
     refs.playerNomeCanal.textContent = canal.nome;
     refs.playerCategoriaCanal.textContent = canal.categoria;
+    MareAds.setContext(canal.nome, canal.categoria); // alvo dos anúncios
     mostrarOverlayPlayer();
 
     try {
@@ -872,6 +883,7 @@
 
   function fecharPlayer() {
     var video = refs.videoPlayer;
+    MareAds.setPlaying(false); // tira anúncio da tela e volta o vídeo pro cheio
     try {
       video.pause();
     } catch (erroPause) {}
@@ -944,6 +956,10 @@
 
     if (estado.telaAtual === 'login') {
       tratarTeclaLogin(codigo, evento);
+    } else if (estado.telaAtual === 'pagamento') {
+      tratarTeclaPagamento(codigo, evento);
+    } else if (estado.telaAtual === 'manutencao' || estado.telaAtual === 'update') {
+      tratarTeclaBloqueio(codigo, evento);
     } else if (estado.telaAtual === 'home') {
       evento.preventDefault();
       tratarTeclaHome(codigo);
@@ -968,6 +984,299 @@
         }
       }
     });
+  }
+
+  // --------------------------------------------------------
+  // CONFIG REMOTA + GATES (manutenção / atualização obrigatória)
+  // --------------------------------------------------------
+  function versaoParaNumeros(v) {
+    var partes = ('' + (v || '')).split('.');
+    var nums = [];
+    for (var i = 0; i < partes.length; i++) {
+      var n = parseInt(partes[i], 10);
+      nums.push(isNaN(n) ? 0 : n);
+    }
+    return nums;
+  }
+  // true se a < b (versão instalada menor que a exigida)
+  function versaoMenor(a, b) {
+    var na = versaoParaNumeros(a), nb = versaoParaNumeros(b);
+    var len = Math.max(na.length, nb.length);
+    for (var i = 0; i < len; i++) {
+      var x = na[i] || 0, y = nb[i] || 0;
+      if (x < y) { return true; }
+      if (x > y) { return false; }
+    }
+    return false;
+  }
+  function updateObrigatorio(c) {
+    if (!c) { return false; }
+    if (c.minVersion && versaoMenor(APP_VERSION, c.minVersion)) { return true; }
+    if (c.updateMandatory && c.latestVersion && versaoMenor(APP_VERSION, c.latestVersion)) { return true; }
+    return false;
+  }
+  function formatarReais(cents) {
+    var v = (Number(cents) || 0) / 100;
+    return 'R$ ' + v.toFixed(2).replace('.', ',');
+  }
+
+  function carregarConfig(aoTerminar) {
+    MareApi.buscarConfig().then(function (cfg) {
+      estado.config = cfg || {};
+      atualizarTextoPlano();
+      if (aoTerminar) { aoTerminar(); }
+    }).catch(function () {
+      estado.config = estado.config || {};
+      if (aoTerminar) { aoTerminar(); }
+    });
+  }
+
+  function atualizarTextoPlano() {
+    var c = estado.config || {};
+    if (!refs.pagamentoPlano) { return; }
+    if (c.priceCents) {
+      var nome = c.planName || 'Plano';
+      var dias = c.planDays ? (' · ' + c.planDays + ' dias') : '';
+      refs.pagamentoPlano.textContent = nome + ' — ' + formatarReais(c.priceCents) + dias;
+    }
+  }
+
+  // Decide se uma tela de bloqueio deve aparecer. Retorna true se bloqueou.
+  function aplicarGates() {
+    var c = estado.config || {};
+    if (c.maintenance === true) {
+      refs.manutencaoMsg.textContent = c.maintenanceMessage ||
+        'Estamos melhorando a Maré TV. Voltamos já!';
+      mostrarTela('manutencao');
+      aplicarFoco(refs.botaoManutencaoRetry);
+      return true;
+    }
+    if (updateObrigatorio(c)) {
+      refs.updateMsg.textContent = c.updateMessage ||
+        'Saiu uma versão nova da Maré TV. Atualize para continuar assistindo.';
+      if (c.storeUrl) {
+        refs.updateStore.textContent = c.storeUrl;
+        refs.updateStore.classList.remove('oculto');
+      } else {
+        refs.updateStore.classList.add('oculto');
+      }
+      mostrarTela('update');
+      aplicarFoco(refs.botaoUpdateRetry);
+      return true;
+    }
+    return false;
+  }
+
+  // Poll periódico: reflete manutenção/atualização mesmo com o app aberto, e
+  // libera sozinho quando o admin desliga.
+  function pollConfig() {
+    MareApi.buscarConfig().then(function (cfg) {
+      estado.config = cfg || {};
+      atualizarTextoPlano();
+      var bloqueado = (estado.telaAtual === 'manutencao' || estado.telaAtual === 'update');
+      if (aplicarGates()) { return; }
+      if (bloqueado) {
+        if (estado.credenciais) { entrarNaHome(); } else { iniciarLogin(); }
+      }
+    }).catch(function () {});
+  }
+
+  function reverificarGate() {
+    MareApi.buscarConfig().then(function (cfg) {
+      estado.config = cfg || {};
+      if (aplicarGates()) { return; }
+      if (estado.credenciais) { entrarNaHome(); } else { iniciarLogin(); }
+    }).catch(function () {});
+  }
+
+  function tratarTeclaBloqueio(codigo, evento) {
+    evento.preventDefault();
+    if (codigo === TECLA.OK) {
+      reverificarGate();
+    } else if (codigo === TECLA.VOLTAR) {
+      tentarSairDoApp();
+    }
+  }
+
+  // --------------------------------------------------------
+  // PAGAMENTO (assinar via PIX)
+  // --------------------------------------------------------
+  function obterDeviceId() {
+    var id = null;
+    try { id = localStorage.getItem(CHAVE_DEVICE); } catch (e) {}
+    if (!id) {
+      id = 'lg-' + Math.floor((1 + Math.random()) * 1e12).toString(16) + '-' + (new Date()).getTime();
+      try { localStorage.setItem(CHAVE_DEVICE, id); } catch (e) {}
+    }
+    return id;
+  }
+
+  function abrirPagamento() {
+    pararPollPagamento();
+    mostrarTela('pagamento');
+    refs.pagamentoForm.classList.remove('oculto');
+    refs.pagamentoQr.classList.add('oculto');
+    refs.pagamentoErro.classList.add('oculto');
+    atualizarTextoPlano();
+
+    var c = estado.config || {};
+    if (c.simulate === true) {
+      refs.botaoSimular.classList.remove('oculto');
+    } else {
+      refs.botaoSimular.classList.add('oculto');
+    }
+    if (!c.pixEnabled && c.simulate !== true) {
+      exibirErroPagamento('Pagamento indisponível no momento. Assine pelo site e entre com usuário e senha.');
+    }
+    aplicarFoco(refs.pagCpf);
+  }
+
+  function exibirErroPagamento(msg) {
+    refs.pagamentoErro.textContent = msg;
+    refs.pagamentoErro.classList.remove('oculto');
+  }
+
+  function mensagemErroPix(code) {
+    if (code === 'cpf_obrigatorio') { return 'CPF obrigatório para gerar o PIX.'; }
+    if (code === 'pix_indisponivel') { return 'PIX indisponível agora. Assine pelo site.'; }
+    return 'Não foi possível gerar o PIX. Tente novamente.';
+  }
+
+  function gerarPix() {
+    var nome = (refs.pagNome.value || '').replace(/^\s+|\s+$/g, '');
+    var cpf = (refs.pagCpf.value || '').replace(/\D/g, '');
+    if (cpf.length !== 11) {
+      exibirErroPagamento('Informe um CPF válido (11 números).');
+      aplicarFoco(refs.pagCpf);
+      return;
+    }
+    refs.pagamentoErro.classList.add('oculto');
+    refs.botaoGerarPix.textContent = 'Gerando…';
+
+    var deviceId = obterDeviceId();
+    MareApi.iniciarPix(deviceId, nome, cpf).then(function (res) {
+      refs.botaoGerarPix.textContent = 'Gerar PIX';
+      var d = res.dados || {};
+      if (res.status >= 200 && res.status < 300 && d.qrCodeBase64) {
+        mostrarQrPix(d, deviceId);
+      } else {
+        exibirErroPagamento(mensagemErroPix(d.error));
+      }
+    }).catch(function () {
+      refs.botaoGerarPix.textContent = 'Gerar PIX';
+      exibirErroPagamento('Sem conexão. Tente novamente.');
+    });
+  }
+
+  function mostrarQrPix(d, deviceId) {
+    refs.pagamentoForm.classList.add('oculto');
+    refs.pagamentoQr.classList.remove('oculto');
+    refs.pagamentoValor.textContent = d.amountCents ? formatarReais(d.amountCents) : '';
+    refs.pagamentoQrImg.src = 'data:image/png;base64,' + d.qrCodeBase64;
+    refs.pagamentoStatusTexto.textContent = 'Aguardando pagamento…';
+    aplicarFoco(refs.botaoCancelarPix);
+    iniciarPollPagamento(d.paymentId, deviceId);
+  }
+
+  function iniciarPollPagamento(paymentId, deviceId) {
+    pararPollPagamento();
+    estado.pagamento.paymentId = paymentId;
+    estado.pagamento.deviceId = deviceId;
+    estado.pagamento.timer = setInterval(function () {
+      MareApi.statusPix(paymentId, deviceId).then(function (s) {
+        if (s && s.paid === true && s.username && s.password) {
+          sucessoPagamento(s.username, s.password);
+        } else if (s && s.status && s.status !== 'pending' && s.status !== 'approved') {
+          pararPollPagamento();
+          refs.pagamentoStatusTexto.textContent = 'Pagamento não concluído. Gere um novo PIX.';
+        }
+      }).catch(function () {});
+    }, TEMPO_POLL_PAGAMENTO_MS);
+  }
+
+  function pararPollPagamento() {
+    if (estado.pagamento.timer) {
+      clearInterval(estado.pagamento.timer);
+      estado.pagamento.timer = null;
+    }
+  }
+
+  function simularPagamento() {
+    var nome = (refs.pagNome.value || '').replace(/^\s+|\s+$/g, '');
+    refs.botaoSimular.textContent = 'Simulando…';
+    MareApi.simularPix(obterDeviceId(), nome).then(function (res) {
+      refs.botaoSimular.textContent = 'Simular pagamento (teste)';
+      var d = res.dados || {};
+      if (d.paid === true && d.username && d.password) {
+        sucessoPagamento(d.username, d.password);
+      } else {
+        exibirErroPagamento('Simulação indisponível.');
+      }
+    }).catch(function () {
+      refs.botaoSimular.textContent = 'Simular pagamento (teste)';
+      exibirErroPagamento('Sem conexão.');
+    });
+  }
+
+  function sucessoPagamento(usuario, senha) {
+    pararPollPagamento();
+    estado.credenciais = { usuario: usuario, senha: senha };
+    salvarCredenciais(usuario, senha);
+    entrarNaHome();
+  }
+
+  function fecharPagamento() {
+    pararPollPagamento();
+    iniciarLogin();
+  }
+
+  function indiceDe(lista, el) {
+    for (var i = 0; i < lista.length; i++) { if (lista[i] === el) { return i; } }
+    return -1;
+  }
+
+  function pagFocaveis() {
+    if (!refs.pagamentoQr.classList.contains('oculto')) {
+      return [refs.botaoCancelarPix];
+    }
+    var lista = [refs.pagNome, refs.pagCpf, refs.botaoGerarPix];
+    if (!refs.botaoSimular.classList.contains('oculto')) { lista.push(refs.botaoSimular); }
+    lista.push(refs.botaoVoltarLogin);
+    return lista;
+  }
+
+  function tratarTeclaPagamento(codigo, evento) {
+    var ativo = document.activeElement;
+    var emCampo = (ativo === refs.pagNome || ativo === refs.pagCpf);
+
+    if (codigo === TECLA.VOLTAR) {
+      evento.preventDefault();
+      if (emCampo) { ativo.blur(); return; }
+      fecharPagamento();
+      return;
+    }
+
+    var lista = pagFocaveis();
+    var idx = indiceDe(lista, estado.elementoFocado);
+    if (idx < 0) { idx = 0; }
+
+    if (codigo === TECLA.BAIXO) {
+      evento.preventDefault();
+      if (idx < lista.length - 1) { aplicarFoco(lista[idx + 1]); }
+    } else if (codigo === TECLA.CIMA) {
+      evento.preventDefault();
+      if (idx > 0) { aplicarFoco(lista[idx - 1]); }
+    } else if (codigo === TECLA.OK) {
+      evento.preventDefault();
+      var el = lista[idx];
+      if (el === refs.pagNome) {
+        aplicarFoco(refs.pagCpf);
+      } else if (el === refs.pagCpf) {
+        aplicarFoco(refs.botaoGerarPix);
+      } else if (el && typeof el.click === 'function') {
+        el.click();
+      }
+    }
   }
 
   // --------------------------------------------------------
@@ -1002,8 +1311,43 @@
     refs.playerCategoriaCanal = document.getElementById('player-categoria-canal');
     refs.playerErro = document.getElementById('player-erro');
 
+    // Pagamento (PIX)
+    refs.pagamentoPlano = document.getElementById('pagamento-plano');
+    refs.pagamentoForm = document.getElementById('pagamento-form');
+    refs.pagNome = document.getElementById('pag-nome');
+    refs.pagCpf = document.getElementById('pag-cpf');
+    refs.pagamentoErro = document.getElementById('pagamento-erro');
+    refs.botaoGerarPix = document.getElementById('botao-gerar-pix');
+    refs.botaoSimular = document.getElementById('botao-simular');
+    refs.botaoVoltarLogin = document.getElementById('botao-voltar-login');
+    refs.pagamentoQr = document.getElementById('pagamento-qr');
+    refs.pagamentoValor = document.getElementById('pagamento-valor');
+    refs.pagamentoQrImg = document.getElementById('pagamento-qr-img');
+    refs.pagamentoStatusTexto = document.getElementById('pagamento-status-texto');
+    refs.botaoCancelarPix = document.getElementById('botao-cancelar-pix');
+    refs.botaoAssinar = document.getElementById('botao-assinar');
+
+    // Bloqueio (manutenção / atualização)
+    refs.manutencaoMsg = document.getElementById('manutencao-msg');
+    refs.botaoManutencaoRetry = document.getElementById('botao-manutencao-retry');
+    refs.updateMsg = document.getElementById('update-msg');
+    refs.updateStore = document.getElementById('update-store');
+    refs.botaoUpdateRetry = document.getElementById('botao-update-retry');
+
+    // Camadas de anúncio
+    refs.adBehind = document.getElementById('ad-behind');
+    refs.adFront = document.getElementById('ad-front');
+    refs.adBox = document.getElementById('ad-box');
+
     refs.botaoEntrar.onclick = acionarLogin;
     refs.homeErroBotao.onclick = carregarCanais;
+    refs.botaoAssinar.onclick = abrirPagamento;
+    refs.botaoGerarPix.onclick = gerarPix;
+    refs.botaoSimular.onclick = simularPagamento;
+    refs.botaoVoltarLogin.onclick = fecharPagamento;
+    refs.botaoCancelarPix.onclick = fecharPagamento;
+    refs.botaoManutencaoRetry.onclick = reverificarGate;
+    refs.botaoUpdateRetry.onclick = reverificarGate;
 
     registrarEventosDoVideo();
   }
@@ -1012,7 +1356,24 @@
     inicializarReferencias();
     document.addEventListener('keydown', aoPressionarTecla);
     registrarVisibilidadeWebOS();
-    iniciarLogin();
+
+    // Anúncios dentro da transmissão (mesma /api/tv/ads da TV/celular).
+    MareAds.start({
+      video: refs.videoPlayer,
+      behind: refs.adBehind,
+      front: refs.adFront,
+      box: refs.adBox
+    });
+
+    // Config remota da LG (plano/PIX + manutenção/atualização). Se um gate
+    // estiver ligado, bloqueia ANTES do login; senão segue o fluxo normal.
+    carregarConfig(function () {
+      if (aplicarGates()) { return; }
+      iniciarLogin();
+    });
+    if (!estado.configTimer) {
+      estado.configTimer = setInterval(pollConfig, TEMPO_POLL_CONFIG_MS);
+    }
   }
 
   document.addEventListener('DOMContentLoaded', iniciarApp);

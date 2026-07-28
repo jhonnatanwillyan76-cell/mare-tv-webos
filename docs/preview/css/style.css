@@ -643,3 +643,263 @@ input {
   font-size: 20px;
   color: #9ca3ad;
 }
+
+/* ============================================================
+   BOTÃO SECUNDÁRIO (ghost) — usado em login/pagamento/bloqueio
+   ============================================================ */
+.botao-secundario {
+  margin-top: 16px;
+  height: 60px;
+  width: 100%;
+  font-size: 21px;
+  font-weight: bold;
+  color: #fafafa;
+  background: transparent;
+  border: 1px solid #27272c;
+  border-radius: 10px;
+}
+.botao-secundario.focado {
+  color: #17b3a6;
+  border-color: #17b3a6;
+  background-color: #1f1f26;
+  box-shadow: 0 0 0 3px #17b3a6, 0 0 18px 2px rgba(23, 179, 166, 0.45);
+  transform: scale(1.02);
+}
+
+/* separador "ou" no login */
+.login-ou {
+  width: 100%;
+  margin: 22px 0 4px;
+  text-align: center;
+  position: relative;
+  color: #6b7280;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.login-ou::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: #27272c;
+}
+.login-ou span {
+  position: relative;
+  background: #131317;
+  padding: 0 14px;
+}
+
+/* ============================================================
+   TELA PAGAMENTO (PIX)
+   ============================================================ */
+.tela-pagamento {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 26%, rgba(23, 179, 166, 0.12) 0%, rgba(10, 10, 11, 0) 60%), #0a0a0b;
+}
+.pagamento-caixa {
+  width: 640px;
+  padding: 44px 56px 52px;
+  background: #131317;
+  border: 1px solid #27272c;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.pagamento-titulo {
+  margin-top: 16px;
+  font-size: 38px;
+  font-weight: bold;
+  color: #fafafa;
+}
+.pagamento-sub {
+  margin-top: 8px;
+  font-size: 21px;
+  color: #17b3a6;
+  font-weight: bold;
+}
+.pagamento-form {
+  width: 100%;
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.pagamento-qr {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.pagamento-valor {
+  font-size: 34px;
+  font-weight: bold;
+  color: #fafafa;
+  margin-bottom: 16px;
+}
+.pagamento-qr-moldura {
+  width: 320px;
+  height: 320px;
+  padding: 14px;
+  background: #ffffff;
+  border-radius: 14px;
+}
+.pagamento-qr-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+}
+.pagamento-instr {
+  margin-top: 18px;
+  font-size: 17px;
+  color: #9ca3ad;
+  line-height: 1.5;
+  max-width: 460px;
+}
+.pagamento-status {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  font-size: 19px;
+  color: #fafafa;
+}
+.pagamento-status .spinner { margin-right: 12px; }
+
+/* ============================================================
+   TELAS DE BLOQUEIO (manutenção / atualização)
+   ============================================================ */
+.tela-bloqueio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 34%, rgba(23, 179, 166, 0.10) 0%, rgba(10, 10, 11, 0) 62%), #0a0a0b;
+}
+.bloqueio-caixa {
+  width: 720px;
+  padding: 56px 64px;
+  background: #131317;
+  border: 1px solid #27272c;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.bloqueio-icone {
+  font-size: 76px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.bloqueio-titulo {
+  font-size: 40px;
+  font-weight: bold;
+  color: #fafafa;
+}
+.bloqueio-msg {
+  margin-top: 14px;
+  font-size: 21px;
+  color: #9ca3ad;
+  line-height: 1.45;
+  max-width: 560px;
+}
+.bloqueio-link {
+  margin-top: 16px;
+  padding: 12px 16px;
+  font-size: 17px;
+  color: #17b3a6;
+  background: #0f0f12;
+  border: 1px solid #27272c;
+  border-radius: 8px;
+  word-break: break-all;
+  max-width: 560px;
+}
+.tela-bloqueio .botao-entrar {
+  margin-top: 30px;
+  width: 320px;
+}
+
+/* ============================================================
+   ANÚNCIOS DENTRO DA TRANSMISSÃO
+   As camadas: behind (atrás do vídeo) e front (na frente).
+   ============================================================ */
+.video-player { z-index: 2; }
+.ad-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ad-layer-behind { z-index: 1; background: #0a0a0b; }
+.ad-layer-front { z-index: 3; }
+
+.ad-box {
+  position: absolute;
+  opacity: 0;
+  -webkit-transform: scale(0.98);
+  transform: scale(0.98);
+  -webkit-transition: opacity 1.2s ease, transform 1.2s ease;
+  transition: opacity 1.2s ease, transform 1.2s ease;
+  overflow: hidden;
+  background: #0a0a0b;
+}
+.ad-box.ad-visivel {
+  opacity: 1;
+  -webkit-transform: scale(1);
+  transform: scale(1);
+}
+.ad-media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #0a0a0b;
+}
+
+/* SHRINK: a caixa cobre a tela toda; o vídeo encolhido revela o anúncio. */
+.ad-lshape, .ad-split, .ad-squeeze {
+  left: 0; top: 0; width: 1920px; height: 1080px;
+}
+.ad-squeeze .ad-media { object-fit: contain; }
+
+/* OVERLAY: cartão no canto inferior direito, por cima do vídeo. */
+.ad-overlay {
+  right: 56px; bottom: 56px;
+  width: 600px; height: 338px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+/* LOWER THIRD: faixa inferior por cima do vídeo. */
+.ad-lower_third {
+  left: 0; right: 0; bottom: 0;
+  width: 1920px; height: 250px;
+  border-top: 2px solid rgba(23, 179, 166, 0.5);
+}
+
+/* ============================================================
+   POLIMENTO (mais "Maré", mais bonito)
+   ============================================================ */
+.login-caixa,
+.pagamento-caixa,
+.bloqueio-caixa {
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+.home-cabecalho {
+  background: linear-gradient(180deg, #0f0f12 0%, #0a0a0b 100%);
+}
+.pill-ao-vivo {
+  box-shadow: 0 0 14px 1px rgba(23, 179, 166, 0.5);
+}
+.cartao-canal.focado {
+  border-color: #17b3a6;
+}

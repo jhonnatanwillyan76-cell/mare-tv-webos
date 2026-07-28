@@ -93,8 +93,44 @@ var MareApi = (function () {
     });
   }
 
+  // GET /api/lg/config — plano/PIX + manutenção/atualização da versão LG.
+  function buscarConfig() {
+    return requisitar('GET', '/api/lg/config', null).then(function (resp) {
+      return resp.dados || {};
+    });
+  }
+
+  // POST /api/tv/pix/start { deviceId, name, cpf } — cria o PIX e devolve o QR.
+  function iniciarPix(deviceId, nome, cpf) {
+    var corpo = { deviceId: deviceId, name: nome, cpf: cpf };
+    return requisitar('POST', '/api/tv/pix/start', corpo).then(function (resp) {
+      return { status: resp.status, dados: resp.dados || {} };
+    });
+  }
+
+  // GET /api/tv/pix/status?paymentId=..&deviceId=.. — poll do pagamento.
+  function statusPix(paymentId, deviceId) {
+    var caminho = '/api/tv/pix/status?paymentId=' + encodeURIComponent(paymentId) +
+      '&deviceId=' + encodeURIComponent(deviceId);
+    return requisitar('GET', caminho, null).then(function (resp) {
+      return resp.dados || {};
+    });
+  }
+
+  // POST /api/tv/pix/simulate — só quando o painel liga a simulação (teste).
+  function simularPix(deviceId, nome) {
+    var corpo = { deviceId: deviceId, name: nome };
+    return requisitar('POST', '/api/tv/pix/simulate', corpo).then(function (resp) {
+      return { status: resp.status, dados: resp.dados || {} };
+    });
+  }
+
   return {
     buscarCanais: buscarCanais,
-    login: login
+    login: login,
+    buscarConfig: buscarConfig,
+    iniciarPix: iniciarPix,
+    statusPix: statusPix,
+    simularPix: simularPix
   };
 })();
