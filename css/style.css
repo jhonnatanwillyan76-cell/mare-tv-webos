@@ -1005,3 +1005,10 @@ input {
 .cartao-canal.focado {
   border-color: #17b3a6;
 }
+
+/* ============================================================
+   Guia (grade) POR CIMA do player — abertura estilo TV (Sky).
+   O player fica de base; o guia entra no OK como overlay.
+   ============================================================ */
+#tela-player { z-index: 10; }
+#tela-home { z-index: 40; }

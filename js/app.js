@@ -344,15 +344,79 @@
   // HOME
   // --------------------------------------------------------
 
+  // Igual à TV: entra DIRETO no canal em tela cheia (o guia/grade abre no OK).
   function entrarNaHome() {
-    mostrarTela('home');
     if (estado.canaisCarregados) {
       renderizarCategorias();
-      selecionarCategoria(estado.categoriaIndice);
-      focoInicialHome();
+      abrirPrimeiroCanal();
     } else {
       carregarCanais();
     }
+  }
+
+  // Abre o player no 1º canal (Mais Assistidos, quando existe) — abertura Sky.
+  function abrirPrimeiroCanal() {
+    mostrarTela('player');
+    MareAds.setPlaying(true);
+    estado.categoriaIndice = 0; // Mais Assistidos é a 1ª categoria
+    var lista = canaisDaCategoriaAtual();
+    if (!lista || lista.length === 0) {
+      for (var i = 0; i < estado.categoriasOrdem.length; i++) {
+        estado.categoriaIndice = i;
+        lista = canaisDaCategoriaAtual();
+        if (lista.length) { break; }
+      }
+    }
+    if (!lista || lista.length === 0) {
+      mostrarErroSemCanais('Nenhum canal disponível no momento.');
+      return;
+    }
+    estado.player.listaAtual = lista;
+    estado.player.indiceAtual = 0;
+    estado.canalIndice = 0;
+    definirCanalNoPlayer(lista[0]);
+  }
+
+  // Erro/vazio: mostra a tela de erro da grade POR CIMA do player.
+  function mostrarErroSemCanais(msg) {
+    refs.playerCarregando.classList.add('oculto');
+    refs.telaHome.classList.remove('oculto');
+    estado.telaAtual = 'guia';
+    refs.listaCategorias.innerHTML = '';
+    refs.gradeCanais.innerHTML = '';
+    refs.homeVazio.classList.add('oculto');
+    refs.homeErroTexto.textContent = msg;
+    refs.homeErro.classList.remove('oculto');
+    aplicarFoco(refs.homeErroBotao);
+  }
+
+  // ---- GUIA (a grade de canais, aberta por cima do player no OK) ----
+  function abrirGuia() {
+    refs.telaHome.classList.remove('oculto');
+    estado.telaAtual = 'guia';
+    refs.playerOverlay.classList.remove('visivel'); // esconde a info do player
+    if (estado.player.timerOverlay) { clearTimeout(estado.player.timerOverlay); }
+    renderizarCategorias();
+    selecionarCategoria(estado.categoriaIndice);
+    focoInicialHome();
+  }
+
+  function fecharGuia() {
+    refs.telaHome.classList.add('oculto');
+    estado.telaAtual = 'player';
+    mostrarOverlayPlayer();
+  }
+
+  // Escolhe um canal no guia: sintoniza no MESMO player e fecha o guia.
+  function selecionarCanalDoGuia(indice) {
+    var canais = canaisDaCategoriaAtual();
+    if (indice < 0 || indice >= canais.length) { return; }
+    estado.player.listaAtual = canais;
+    estado.player.indiceAtual = indice;
+    estado.canalIndice = indice;
+    var canal = canais[indice];
+    fecharGuia();
+    definirCanalNoPlayer(canal);
   }
 
   // -------- Cache no aparelho (abertura instantânea) --------
@@ -428,43 +492,33 @@
   function carregarCanais() {
     refs.homeErro.classList.add('oculto');
     refs.homeCarregando.classList.add('oculto');
+    // Abre já no player em tela cheia (igual à TV): mostra "sintonizando".
+    mostrarTela('player');
+    esconderErroPlayer();
+    refs.playerCarregando.classList.remove('oculto');
 
-    // 1) Se há cache no aparelho, a grade aparece NA HORA (sem loading) e a
-    //    lista é revalidada em segundo plano.
+    // 1) Cache no aparelho → abre NA HORA e revalida em segundo plano.
     var cache = carregarCacheCanais();
     if (cache) {
       aplicarDados(cache.channels, cache.mostWatched);
       renderizarCategorias();
-      selecionarCategoria(0);
-      focoInicialHome();
+      abrirPrimeiroCanal();
       atualizarCanaisEmSegundoPlano();
       return;
     }
 
-    // 2) Primeira vez (sem cache): skeleton shimmer enquanto busca — sem spinner
-    //    "pelado". Com o cache do servidor quente, a resposta é rápida.
-    renderizarSkeleton();
-
+    // 2) Primeira vez (sem cache): busca e abre o 1º canal.
     MareApi.buscarCanais().then(function (res) {
       aplicarDados(res.channels, res.mostWatched);
-
       if (estado.categoriasOrdem.length === 0) {
-        limparSkeleton();
-        refs.homeErroTexto.textContent = 'Nenhum canal disponível no momento.';
-        refs.homeErro.classList.remove('oculto');
-        aplicarFoco(refs.homeErroBotao);
+        mostrarErroSemCanais('Nenhum canal disponível no momento.');
         return;
       }
-
       salvarCacheCanais(res.channels, res.mostWatched);
       renderizarCategorias();
-      selecionarCategoria(0);
-      focoInicialHome();
+      abrirPrimeiroCanal();
     }).catch(function (erro) {
-      limparSkeleton();
-      refs.homeErroTexto.textContent = (erro && erro.message) || 'Não foi possível carregar os canais.';
-      refs.homeErro.classList.remove('oculto');
-      aplicarFoco(refs.homeErroBotao);
+      mostrarErroSemCanais((erro && erro.message) || 'Não foi possível carregar os canais.');
       if (window.console && console.error) { console.error('Falha ao carregar canais:', erro); }
     });
   }
@@ -560,7 +614,7 @@
   function criarTratadorCliqueCanal(indice) {
     return function () {
       focarCanalPorIndice(indice);
-      abrirPlayer(indice);
+      selecionarCanalDoGuia(indice);
     };
   }
 
@@ -675,7 +729,7 @@
     var indice = estado.canalIndice;
 
     if (codigo === TECLA.OK) {
-      abrirPlayer(indice);
+      selecionarCanalDoGuia(indice);
       return;
     }
 
@@ -723,7 +777,7 @@
         estado.zonaHome = 'categorias';
         focarCategoriaPorIndice(estado.categoriaIndice);
       } else {
-        tentarSairDoApp();
+        fecharGuia(); // fecha o guia e volta pro canal em tela cheia
       }
       return;
     }
@@ -940,20 +994,25 @@
     focarCanalPorIndice(estado.canalIndice);
   }
 
+  // Player em tela cheia (estilo Sky, igual à TV):
+  //  ↑↓/←→ zapeia · OK: mostra a info; 2º OK abre o GUIA · VOLTAR: sai do app.
   function tratarTeclaPlayer(codigo) {
     if (codigo === TECLA.VOLTAR) {
-      fecharPlayer();
+      tentarSairDoApp();
       return;
     }
 
     var erroVisivel = !refs.playerErro.classList.contains('oculto');
 
-    if (codigo === TECLA.CIMA) {
+    if (codigo === TECLA.CIMA || codigo === TECLA.ESQUERDA) {
       trocarCanalNoPlayer(-1);
-    } else if (codigo === TECLA.BAIXO) {
+    } else if (codigo === TECLA.BAIXO || codigo === TECLA.DIREITA) {
       trocarCanalNoPlayer(1);
     } else if (codigo === TECLA.OK) {
-      if (!erroVisivel) {
+      // Canal ruim OU info já à vista → abre o guia; senão, traz a info.
+      if (erroVisivel || refs.playerOverlay.classList.contains('visivel')) {
+        abrirGuia();
+      } else {
         mostrarOverlayPlayer();
       }
     }
@@ -993,7 +1052,7 @@
       tratarTeclaPagamento(codigo, evento);
     } else if (estado.telaAtual === 'manutencao' || estado.telaAtual === 'update') {
       tratarTeclaBloqueio(codigo, evento);
-    } else if (estado.telaAtual === 'home') {
+    } else if (estado.telaAtual === 'guia' || estado.telaAtual === 'home') {
       evento.preventDefault();
       tratarTeclaHome(codigo);
     } else if (estado.telaAtual === 'player') {
@@ -1386,6 +1445,21 @@
     if (!estado.configTimer) {
       estado.configTimer = setInterval(pollConfig, TEMPO_POLL_CONFIG_MS);
     }
+  }
+
+  // AMBIENTE DE TESTE (só no navegador, NUNCA na TV): injeta canais fake e abre
+  // o fluxo igual à TV (player + guia) sem precisar logar. Inerte no webOS.
+  if (!window.webOS) {
+    window.__mare = {
+      fake: function (channels, mw) {
+        inicializarReferencias();
+        aplicarDados(channels, mw || []);
+        renderizarCategorias();
+        abrirPrimeiroCanal();
+      },
+      guia: function () { abrirGuia(); },
+      fecharGuia: function () { fecharGuia(); }
+    };
   }
 
   document.addEventListener('DOMContentLoaded', iniciarApp);
