@@ -109,13 +109,31 @@
     <span class="spinner spinner--grande" aria-hidden="true"></span>
   </div>
 
+  <!-- Painel de informação do canal (igual à TV Android): número + logo +
+       AO VIVO + nome + categoria + relógio + dicas. Aparece ao trocar de canal
+       e some sozinho. -->
   <div id="player-overlay" class="player-overlay">
-    <div class="player-overlay-faixa">
-      <div class="player-overlay-linha">
-        <div class="player-overlay-nome" id="player-nome-canal"></div>
-        <span class="pill-ao-vivo">AO VIVO</span>
+    <div class="pinfo">
+      <div class="pinfo-num" id="player-num">1</div>
+      <div class="pinfo-logo">
+        <img id="player-logo" class="pinfo-logo-img" alt="">
+        <span class="pinfo-logo-inicial" id="player-logo-inicial"></span>
       </div>
-      <div class="player-overlay-categoria" id="player-categoria-canal"></div>
+      <div class="pinfo-main">
+        <div class="pinfo-live">
+          <span class="pinfo-live-dot"></span>
+          <span class="pinfo-live-txt">AO VIVO</span>
+        </div>
+        <div class="pinfo-nome" id="player-nome-canal"></div>
+        <div class="pinfo-cat" id="player-categoria-canal"></div>
+      </div>
+      <div class="pinfo-right">
+        <div class="pinfo-clock" id="player-clock"></div>
+        <div class="pinfo-hints">
+          <span class="pinfo-key">OK</span> Guia
+          <span class="pinfo-key">▲▼</span> Trocar
+        </div>
+      </div>
     </div>
   </div>
 

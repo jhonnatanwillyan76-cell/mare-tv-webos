@@ -37,7 +37,7 @@
   // css/style.css) — se mudar um, muda o outro.
   var GRID_COLUNAS = 4;
 
-  var TEMPO_OVERLAY_MS = 3000;
+  var TEMPO_OVERLAY_MS = 4500;
   var TEMPO_LIMITE_CARREGAMENTO_MS = 15000;
   var CHAVE_LOCALSTORAGE = 'maretv_webos_credenciais';
   // Cache dos canais no aparelho: a próxima abertura mostra a grade NA HORA
@@ -798,6 +798,7 @@
     refs.playerCarregando.classList.remove('oculto');
     refs.playerNomeCanal.textContent = canal.nome;
     refs.playerCategoriaCanal.textContent = canal.categoria;
+    preencherPainelCanal(canal); // número + logo do painel (igual à TV)
     MareAds.setContext(canal.nome, canal.categoria); // alvo dos anúncios
     mostrarOverlayPlayer();
 
@@ -853,7 +854,39 @@
     definirCanalNoPlayer(lista[novoIndice]);
   }
 
+  // Número do canal (posição na lista completa) — igual ao número Sky da TV.
+  function numeroDoCanal(canal) {
+    for (var i = 0; i < estado.canais.length; i++) {
+      if (estado.canais[i].url === canal.url) { return (i + 1); }
+    }
+    return '';
+  }
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  function atualizarRelogioPainel() {
+    if (!refs.playerClock) { return; }
+    var d = new Date();
+    refs.playerClock.textContent = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  // Preenche número + logo do painel (o nome/categoria já são setados fora).
+  function preencherPainelCanal(canal) {
+    refs.playerNum.textContent = numeroDoCanal(canal);
+    refs.playerLogoInicial.textContent = (canal.nome.charAt(0) || '?').toUpperCase();
+    if (canal.logo) {
+      refs.playerPinfo.classList.remove('sem-logo');
+      refs.playerLogo.onerror = function () {
+        refs.playerPinfo.classList.add('sem-logo');
+      };
+      refs.playerLogo.src = canal.logo;
+    } else {
+      refs.playerPinfo.classList.add('sem-logo');
+    }
+  }
+
   function mostrarOverlayPlayer() {
+    atualizarRelogioPainel(); // relógio sempre atual quando o painel aparece
     refs.playerOverlay.classList.add('visivel');
     if (estado.player.timerOverlay) {
       clearTimeout(estado.player.timerOverlay);
@@ -1285,6 +1318,11 @@
     refs.playerOverlay = document.getElementById('player-overlay');
     refs.playerNomeCanal = document.getElementById('player-nome-canal');
     refs.playerCategoriaCanal = document.getElementById('player-categoria-canal');
+    refs.playerNum = document.getElementById('player-num');
+    refs.playerLogo = document.getElementById('player-logo');
+    refs.playerLogoInicial = document.getElementById('player-logo-inicial');
+    refs.playerClock = document.getElementById('player-clock');
+    refs.playerPinfo = refs.playerOverlay.getElementsByClassName('pinfo')[0];
     refs.playerErro = document.getElementById('player-erro');
 
     // Pagamento (PIX)
