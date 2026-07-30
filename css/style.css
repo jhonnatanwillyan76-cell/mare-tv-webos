@@ -142,43 +142,62 @@ input {
 }
 
 /* ============================================================
-   TELA DE LOGIN
+   TELAS DE PORTÃO (login / assinatura) — IGUAL À TV ANDROID
+   Sem "card": só o conteúdo centralizado sobre o fundo com
+   brilho radial teal no topo (TvBrandBackground). Estrutura:
+   logo quadrada + "Maré TV" + legenda espaçada + campos com
+   ícone interno + botão teal + botão contorno.
    ============================================================ */
-.tela-login {
+.tela-gate {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 50% 30%, rgba(23, 179, 166, 0.10) 0%, rgba(10, 10, 11, 0) 60%), #0a0a0b;
+  /* TvBrandBackground: RadialGradient center(0,-0.9) r1.3 #121A1E→#0A0A0B */
+  background: radial-gradient(120% 130% at 50% 2%, #121a1e 0%, #0a0a0b 66%);
 }
 
-.login-caixa {
-  width: 620px;
-  padding: 56px 64px;
-  background: #131317;
-  border: 1px solid #27272c;
-  border-radius: 14px;
+.gate-conteudo {
+  width: 560px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.login-titulo {
+/* --- Cabeçalho de marca (TvBrandHeader) --- */
+.gate-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 34px;
+}
+.gate-logo {
+  display: block;
+  width: 92px;
+  height: 92px;
+  border-radius: 22px; /* MareLogoMark: size*0.24 */
+  object-fit: cover;
+}
+.gate-title {
   margin-top: 20px;
-  font-size: 44px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
   color: #fafafa;
 }
-
-.login-subtitulo {
+.gate-eyebrow {
   margin-top: 10px;
-  font-size: 22px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 3px;
   color: #9ca3ad;
+  text-transform: uppercase;
 }
 
 .login-verificando {
-  margin-top: 32px;
+  margin-top: 4px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -190,69 +209,106 @@ input {
   margin-left: 12px;
 }
 
-.login-form {
+/* --- Formulário (coluna centralizada) --- */
+.gate-form {
   width: 100%;
-  margin-top: 36px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+}
+
+/* Um campo (rótulo + caixa com ícone) — TvTextField, largura 460 */
+.campo {
+  width: 460px;
+  max-width: 460px;
+  margin-bottom: 18px;
   text-align: left;
 }
-
 .campo-rotulo {
-  font-size: 13px;
-  font-weight: bold;
+  display: block;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   color: #fafafa;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 8px;
-  margin-top: 22px;
+  margin-bottom: 9px;
 }
-.campo-rotulo:first-child {
-  margin-top: 0;
+.campo-caixa {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
-
+.campo-icone {
+  position: absolute;
+  left: 16px;
+  width: 22px;
+  height: 22px;
+  fill: #9ca3ad;
+  pointer-events: none;
+}
 .campo-entrada {
   width: 100%;
-  height: 64px;
-  padding: 0 20px;
-  font-size: 24px;
+  height: 62px;
+  padding: 0 18px 0 50px; /* espaço p/ o ícone à esquerda */
+  font-size: 22px;
+  font-weight: 600;
   color: #fafafa;
-  background: #0f0f12;
+  background: #0a0a0b;
   border: 1px solid #27272c;
   border-radius: 10px;
   outline: none;
 }
-
 .campo-entrada::-webkit-input-placeholder {
   color: #9ca3ad;
 }
 
-.login-erro {
-  margin-top: 18px;
-  padding: 14px 16px;
-  font-size: 18px;
+/* Erro (texto vermelho centralizado, como na TV) */
+.gate-erro {
+  width: 460px;
+  max-width: 460px;
+  margin: 2px 0 14px;
+  font-size: 17px;
+  font-weight: 600;
   color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: 8px;
+  text-align: center;
 }
 
+/* Texto de ajuda abaixo de um campo (helperText da TV) */
+.campo-ajuda {
+  margin-top: 9px;
+  font-size: 15px;
+  line-height: 1.35;
+  color: #9ca3ad;
+  font-weight: 400;
+}
+
+/* --- Botão primário (TvActionButton primary: teal) --- */
+.botao-primario,
 .botao-entrar {
-  margin-top: 30px;
-  height: 66px;
-  width: 100%;
-  font-size: 24px;
-  font-weight: bold;
+  margin-top: 6px;
+  height: 62px;
+  width: 400px;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  font-weight: 600;
   color: #04231f;
   background: #17b3a6;
   border: 1px solid transparent;
   border-radius: 10px;
 }
-
-.login-dica {
-  margin-top: 26px;
-  font-size: 16px;
-  color: #9ca3ad;
+.botao-icone {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+  fill: #04231f;
+}
+.botao-primario.focado,
+.botao-entrar.focado {
+  background: #1ecab9;
+  box-shadow: 0 0 0 3px #17b3a6, 0 0 18px 2px rgba(23, 179, 166, 0.45);
+  transform: scale(1.02);
 }
 
 /* ------------------------------------------------------------
@@ -263,185 +319,211 @@ input {
               border-color 0.12s ease, background-color 0.12s ease;
 }
 
-.campo-entrada.focado,
-.item-categoria.focado,
-.cartao-canal.focado {
+.campo-entrada.focado {
   border-color: #17b3a6;
   background-color: #1f1f26;
   box-shadow: 0 0 0 3px #17b3a6, 0 0 18px 2px rgba(23, 179, 166, 0.45);
   transform: scale(1.02);
 }
 
-.botao-entrar.focado {
-  background: #1ecab9;
-  box-shadow: 0 0 0 3px #17b3a6, 0 0 18px 2px rgba(23, 179, 166, 0.45);
-  transform: scale(1.02);
-}
-
 /* ============================================================
-   TELA HOME
+   GUIA (grade de canais) — RÉPLICA do ChannelBrowser da TV
+   Faixa horizontal de categorias no topo + relógio; grade densa
+   de 3 colunas de LINHAS (número + logo + nome + categoria);
+   rodapé com o canal selecionado + dicas de teclas.
    ============================================================ */
-.tela-home {
+.tela-guia {
   display: flex;
   flex-direction: column;
+  background: #0a0a0b; /* opaco: cobre o player por baixo (z-index) */
 }
 
-.home-cabecalho {
-  height: 96px;
-  min-height: 96px;
+/* ---- Topo: faixa de categorias + relógio ---- */
+.guia-topo {
   display: flex;
   align-items: center;
-  padding: 0 32px;
-  background: #0a0a0b;
-  border-bottom: 1px solid #27272c;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-.home-marca-texto {
-  margin-left: 14px;
-  font-size: 26px;
-  font-weight: bold;
-  color: #fafafa;
-}
-
-.home-cabecalho .pill-ao-vivo {
-  margin-left: 16px;
-}
-
-.home-corpo {
-  flex: 1;
-  display: flex;
-  min-height: 0;
-}
-
-/* ---- Coluna de categorias (esquerda) — chips ---- */
-.coluna-categorias {
-  width: 340px;
-  min-width: 340px;
-  height: 100%;
-  overflow-y: auto;
-  padding: 24px 20px;
-  background: #0a0a0b;
-  border-right: 1px solid #27272c;
-}
-
-.item-categoria {
-  height: 64px;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  margin-bottom: 10px;
-  font-size: 21px;
-  font-weight: bold;
-  color: #9ca3ad;
-  background: #131317;
-  border: 1px solid #27272c;
-  border-radius: 999px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item-categoria.selecionada {
-  color: #17b3a6;
-  background: rgba(23, 179, 166, 0.12);
-  border-color: rgba(23, 179, 166, 0.35);
-}
-
-.item-categoria.focado {
-  color: #fafafa;
-}
-
-/* ---- Grade de canais (direita) — cards ---- */
-.coluna-canais-wrap {
+.guia-faixa {
   flex: 1;
   min-width: 0;
-  height: 100%;
-  position: relative;
+  height: 54px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+.guia-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 54px;
+  padding: 0 22px;
+  margin-right: 14px;
+  font-size: 25px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  vertical-align: top;
+}
+.guia-chip-ic {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+}
+.guia-chip-ic svg {
+  width: 24px;
+  height: 24px;
+  fill: #eba53c; /* âmbar (AppColors.accent) */
+}
+.guia-chip.ativa {
+  background: #17b3a6;
+  color: #00201c;
+  font-weight: 800;
+}
+.guia-chip.ativa .guia-chip-ic svg {
+  fill: #00201c;
+}
+.guia-relogio {
+  margin-left: 22px;
+  font-size: 30px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
 }
 
-.grade-canais {
-  width: 100%;
-  height: 100%;
+/* ---- Corpo: grade de linhas ---- */
+.guia-corpo {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+.guia-grade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   overflow-y: auto;
-  padding: 28px 32px;
+  padding: 20px 28px 16px;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
 }
 
-/* 4 colunas fixas — o valor de GRID_COLUNAS em js/app.js TEM que
-   bater com este número (340px * 4 + 20px * 3 cabe com folga em
-   1920 - 340 de coluna de categorias). Se mudar aqui, mude lá. */
-.cartao-canal {
-  width: 340px;
-  height: 208px;
-  margin: 0 20px 22px 0;
+/* 3 colunas — GRID_COLUNAS em js/app.js TEM que bater com este número.
+   (1920 - 56 de padding) / 3 ≈ 602, menos 12 de gap = 600 por linha. */
+.guia-linha {
+  width: 600px;
+  height: 92px;
+  margin: 0 12px 12px 0;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  padding: 0 14px;
   background: #131317;
   border: 1px solid #27272c;
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
 }
-
-.cartao-canal:nth-child(4n) {
+.guia-linha:nth-child(3n) {
   margin-right: 0;
 }
-
-/* Área da ARTE oficial (pôster/logo). Fundo com leve brilho teal pra emoldurar
-   até logos transparentes na identidade da Maré. */
-.cartao-canal-arte {
+.guia-num {
+  width: 64px;
+  min-width: 64px;
+  font-size: 29px;
+  font-weight: 800;
+  color: #c2cad4;
+}
+.guia-linha.atual .guia-num {
+  color: #17b3a6;
+}
+.guia-logo {
   position: relative;
-  flex: 1;
+  width: 48px;
+  height: 48px;
+  margin: 0 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 38%, rgba(23, 179, 166, 0.14) 0%, rgba(19, 19, 23, 0) 70%), #16161b;
 }
-
-.cartao-canal-logo {
-  max-width: 84%;
-  max-height: 120px;
+.guia-logo-img {
+  max-width: 48px;
+  max-height: 48px;
   object-fit: contain;
 }
-
-/* Selo com a inicial — fallback quando não há arte/logo */
-.cartao-canal-inicial {
+.guia-logo-inicial {
   display: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   align-items: center;
   justify-content: center;
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
   background: rgba(23, 179, 166, 0.18);
   color: #17b3a6;
-  font-size: 34px;
+  font-size: 22px;
   font-weight: bold;
 }
-.cartao-canal.sem-logo .cartao-canal-inicial {
-  display: flex;
+.guia-linha.sem-logo .guia-logo-img { display: none; }
+.guia-linha.sem-logo .guia-logo-inicial { display: flex; }
+.guia-meta {
+  flex: 1;
+  min-width: 0;
 }
-
-/* Barra do nome, na base do card */
-.cartao-canal-info {
-  height: 54px;
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  background: #101014;
-  border-top: 1px solid #1f1f26;
-}
-
-.cartao-canal-nome {
-  font-size: 19px;
-  font-weight: bold;
-  color: #fafafa;
+.guia-nome {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+}
+.guia-sub {
+  margin-top: 2px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #8a96a4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Linha FOCADA (seleção) — borda teal + realce, igual à TV (sem "scale") */
+.guia-linha.focado {
+  background: #20202a;
+  border-color: #17b3a6;
+  border-width: 2px;
+  box-shadow: 0 0 0 2px #17b3a6, 0 0 18px 2px rgba(23, 179, 166, 0.40);
+}
+.guia-linha.focado .guia-sub {
+  color: #17b3a6;
+}
+
+/* ---- Rodapé: canal selecionado + dicas de teclas ---- */
+.guia-legenda {
+  height: 64px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.guia-legenda-nome {
+  flex: 1;
+  min-width: 0;
+  font-size: 23px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.guia-legenda-chaves {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 19px;
+  white-space: nowrap;
+}
+.guia-legenda-chaves .pinfo-key {
+  font-size: 16px;
 }
 
 /* ------------------------------------------------------------
@@ -470,27 +552,30 @@ input {
   to { transform: translateX(100%); }
 }
 .skeleton-chip {
-  height: 64px;
-  margin-bottom: 10px;
-  border-radius: 999px;
-}
-.skeleton-card {
-  width: 340px;
-  height: 208px;
-  margin: 0 20px 22px 0;
+  display: inline-block;
+  width: 160px;
+  height: 54px;
+  margin-right: 14px;
   border-radius: 14px;
+  vertical-align: top;
 }
-.skeleton-card:nth-child(4n) {
+.skeleton-linha {
+  width: 600px;
+  height: 92px;
+  margin: 0 12px 12px 0;
+  border-radius: 12px;
+}
+.skeleton-linha:nth-child(3n) {
   margin-right: 0;
 }
 
 /* ---- Mensagens de estado (carregando / erro / vazio) ---- */
 .home-mensagem {
   position: absolute;
-  left: 340px;
+  left: 0;
   right: 0;
-  top: 96px;
-  bottom: 44px;
+  top: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -513,28 +598,11 @@ input {
   max-width: 640px;
 }
 
-/* o botão "Tentar novamente" herda .botao-entrar (largura 100%
-   do formulário de login) — aqui, dentro da mensagem de estado
-   bem mais larga, ele precisa de uma largura própria */
+/* o botão "Tentar novamente" precisa de largura própria aqui */
 #home-erro-botao {
   width: auto;
   min-width: 280px;
   padding: 0 40px;
-}
-
-/* ---- Rodapé discreto com dicas de teclas ---- */
-.home-rodape {
-  height: 44px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #0a0a0b;
-  border-top: 1px solid #27272c;
-  font-size: 14px;
-  color: #9ca3ad;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
 }
 
 /* ============================================================
@@ -742,11 +810,15 @@ input {
    BOTÃO SECUNDÁRIO (ghost) — usado em login/pagamento/bloqueio
    ============================================================ */
 .botao-secundario {
-  margin-top: 16px;
-  height: 60px;
-  width: 100%;
+  margin-top: 14px;
+  height: 62px;
+  width: 460px;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 21px;
-  font-weight: bold;
+  font-weight: 600;
   color: #fafafa;
   background: transparent;
   border: 1px solid #27272c;
@@ -785,63 +857,42 @@ input {
 }
 
 /* ============================================================
-   TELA PAGAMENTO (PIX)
+   TELA PAGAMENTO (PIX) — usa o layout de portão (.tela-gate)
    ============================================================ */
-.tela-pagamento {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at 50% 26%, rgba(23, 179, 166, 0.12) 0%, rgba(10, 10, 11, 0) 60%), #0a0a0b;
+/* Frase de apoio abaixo do cabeçalho (igual à TV: branco 85%) */
+.gate-lead {
+  margin: -14px 0 22px;
+  font-size: 20px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  max-width: 500px;
 }
-.pagamento-caixa {
-  width: 640px;
-  padding: 44px 56px 52px;
-  background: #131317;
-  border: 1px solid #27272c;
-  border-radius: 16px;
+.pagamento-qr {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 .pagamento-titulo {
-  margin-top: 16px;
-  font-size: 38px;
-  font-weight: bold;
+  font-size: 26px;
+  font-weight: 800;
   color: #fafafa;
-}
-.pagamento-sub {
-  margin-top: 8px;
-  font-size: 21px;
-  color: #17b3a6;
-  font-weight: bold;
-}
-.pagamento-form {
-  width: 100%;
-  margin-top: 26px;
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-}
-.pagamento-qr {
-  width: 100%;
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 .pagamento-valor {
-  font-size: 34px;
-  font-weight: bold;
-  color: #fafafa;
-  margin-bottom: 16px;
+  margin-top: 6px;
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #17b3a6;
 }
 .pagamento-qr-moldura {
-  width: 320px;
-  height: 320px;
+  width: 300px;
+  height: 300px;
   padding: 14px;
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 16px;
 }
 .pagamento-qr-img {
   width: 100%;
@@ -849,21 +900,22 @@ input {
   display: block;
   image-rendering: pixelated;
 }
-.pagamento-instr {
-  margin-top: 18px;
-  font-size: 17px;
-  color: #9ca3ad;
-  line-height: 1.5;
-  max-width: 460px;
-}
 .pagamento-status {
-  margin-top: 18px;
+  margin-top: 20px;
   display: flex;
   align-items: center;
   font-size: 19px;
-  color: #fafafa;
+  color: rgba(255, 255, 255, 0.85);
 }
 .pagamento-status .spinner { margin-right: 12px; }
+.pagamento-instr {
+  margin-top: 10px;
+  font-size: 15px;
+  color: #9ca3ad;
+  line-height: 1.5;
+  max-width: 440px;
+}
+.pagamento-qr .botao-secundario { margin-top: 22px; }
 
 /* ============================================================
    TELAS DE BLOQUEIO (manutenção / atualização)
@@ -991,19 +1043,11 @@ input {
 /* ============================================================
    POLIMENTO (mais "Maré", mais bonito)
    ============================================================ */
-.login-caixa,
-.pagamento-caixa,
 .bloqueio-caixa {
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
 }
-.home-cabecalho {
-  background: linear-gradient(180deg, #0f0f12 0%, #0a0a0b 100%);
-}
 .pill-ao-vivo {
   box-shadow: 0 0 14px 1px rgba(23, 179, 166, 0.5);
-}
-.cartao-canal.focado {
-  border-color: #17b3a6;
 }
 
 /* ============================================================

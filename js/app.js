@@ -35,7 +35,7 @@
   // Quantidade de colunas da grade de canais. TEM que bater com o
   // CSS (.cartao-canal + ".cartao-canal:nth-child(4n)" em
   // css/style.css) — se mudar um, muda o outro.
-  var GRID_COLUNAS = 4;
+  var GRID_COLUNAS = 3; // réplica do ChannelBrowser da TV (3 colunas densas)
 
   var TEMPO_OVERLAY_MS = 4500;
   var TEMPO_LIMITE_CARREGAMENTO_MS = 15000;
@@ -397,7 +397,15 @@
     refs.playerOverlay.classList.remove('visivel'); // esconde a info do player
     if (estado.player.timerOverlay) { clearTimeout(estado.player.timerOverlay); }
     renderizarCategorias();
-    selecionarCategoria(estado.categoriaIndice);
+    selecionarCategoria(estado.categoriaIndice || 0);
+    // Abre posicionado no canal que está no ar (se estiver nesta categoria).
+    var atual = estado.player.canalAtual;
+    if (atual) {
+      var canais = canaisDaCategoriaAtual();
+      for (var i = 0; i < canais.length; i++) {
+        if (canais[i].url === atual.url) { estado.canalIndice = i; break; }
+      }
+    }
     focoInicialHome();
   }
 
@@ -533,7 +541,7 @@
     }).catch(function () {});
   }
 
-  // Skeleton shimmer: chips de categoria + cards fantasma enquanto carrega.
+  // Skeleton shimmer: chips de categoria (horizontais) + linhas fantasma.
   function renderizarSkeleton() {
     var cats = refs.listaCategorias;
     cats.innerHTML = '';
@@ -547,7 +555,7 @@
     refs.homeVazio.classList.add('oculto');
     for (var i = 0; i < 12; i++) {
       var card = document.createElement('div');
-      card.className = 'skeleton skeleton-card';
+      card.className = 'skeleton skeleton-linha';
       grade.appendChild(card);
     }
   }
@@ -557,9 +565,16 @@
     refs.gradeCanais.innerHTML = '';
   }
 
+  // SVG do ícone "fogo" (whatshot) da 1ª categoria "Mais Assistidos" — âmbar,
+  // igual ao ChannelBrowser da TV.
+  var SVG_FOGO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>';
+
   function focoInicialHome() {
-    estado.zonaHome = 'categorias';
-    focarCategoriaPorIndice(estado.categoriaIndice || 0);
+    estado.zonaHome = 'canais';
+    atualizarRelogioGuia();
+    destacarCategoriaAtiva();
+    centralizarChipAtivo();
+    focarCanalPorIndice(estado.canalIndice || 0);
   }
 
   function canaisDaCategoriaAtual() {
@@ -568,46 +583,77 @@
     return estado.categoriasMapa[chaveCategoria(nome)] || [];
   }
 
+  function atualizarRelogioGuia() {
+    if (!refs.guiaRelogio) { return; }
+    var agora = new Date();
+    var hh = ('0' + agora.getHours()).slice(-2);
+    var mm = ('0' + agora.getMinutes()).slice(-2);
+    refs.guiaRelogio.textContent = hh + ':' + mm;
+  }
+
+  function atualizarLegendaGuia(nome) {
+    if (refs.guiaCanalNome) { refs.guiaCanalNome.textContent = nome || ''; }
+  }
+
+  // Faixa horizontal de categorias (chips) — Mais Assistidos leva o ícone de fogo.
   function renderizarCategorias() {
     var container = refs.listaCategorias;
     container.innerHTML = '';
     estado.elementosCategorias = [];
 
     for (var i = 0; i < estado.categoriasOrdem.length; i++) {
-      var item = document.createElement('div');
-      item.className = 'item-categoria focavel';
-      item.setAttribute('tabindex', '-1');
-      item.textContent = estado.categoriasOrdem[i];
-      item.onclick = criarTratadorCliqueCategoria(i);
+      var nome = estado.categoriasOrdem[i];
+      var chip = document.createElement('div');
+      chip.className = 'guia-chip focavel';
+      chip.setAttribute('tabindex', '-1');
 
-      container.appendChild(item);
-      estado.elementosCategorias.push(item);
+      if (nome === ROTULO_MAIS_ASSISTIDOS) {
+        var ic = document.createElement('span');
+        ic.className = 'guia-chip-ic';
+        ic.innerHTML = SVG_FOGO;
+        chip.appendChild(ic);
+      }
+      var tx = document.createElement('span');
+      tx.textContent = nome;
+      chip.appendChild(tx);
+
+      chip.onclick = criarTratadorCliqueCategoria(i);
+      container.appendChild(chip);
+      estado.elementosCategorias.push(chip);
     }
+  }
+
+  function destacarCategoriaAtiva() {
+    for (var i = 0; i < estado.elementosCategorias.length; i++) {
+      if (i === estado.categoriaIndice) {
+        estado.elementosCategorias[i].classList.add('ativa');
+      } else {
+        estado.elementosCategorias[i].classList.remove('ativa');
+      }
+    }
+  }
+
+  // Centraliza o chip ativo na faixa (scroll horizontal manual — Chrome 38).
+  function centralizarChipAtivo() {
+    var c = refs.listaCategorias;
+    var el = estado.elementosCategorias[estado.categoriaIndice];
+    if (!c || !el) { return; }
+    c.scrollLeft = el.offsetLeft - (c.clientWidth - el.offsetWidth) / 2;
   }
 
   function selecionarCategoria(indice) {
     if (indice < 0 || indice >= estado.categoriasOrdem.length) { return; }
-
     estado.categoriaIndice = indice;
     estado.canalIndice = 0;
-
-    for (var i = 0; i < estado.elementosCategorias.length; i++) {
-      if (i === indice) {
-        estado.elementosCategorias[i].classList.add('selecionada');
-      } else {
-        estado.elementosCategorias[i].classList.remove('selecionada');
-      }
-    }
-
+    destacarCategoriaAtiva();
+    centralizarChipAtivo();
     renderizarGradeCanais();
   }
 
-  function criarTratadorErroLogo(cartaoElemento) {
+  function criarTratadorErroLogo(linhaElemento) {
     return function () {
       this.style.display = 'none';
-      // data-inicial já foi setado no card; só marca o estado "sem logo" pra
-      // aparecer o selo com a letra da emissora.
-      cartaoElemento.classList.add('sem-logo');
+      linhaElemento.classList.add('sem-logo');
     };
   }
 
@@ -620,144 +666,144 @@
 
   function criarTratadorCliqueCategoria(indice) {
     return function () {
-      estado.zonaHome = 'categorias';
       selecionarCategoria(indice);
-      focarCategoriaPorIndice(indice);
+      focarCanalPorIndice(0);
     };
   }
 
+  // Grade de LINHAS (número + logo + nome + categoria) — réplica do ChannelBrowser.
   function renderizarGradeCanais() {
     var grade = refs.gradeCanais;
     grade.innerHTML = '';
     estado.elementosCanais = [];
 
     var canais = canaisDaCategoriaAtual();
-
     if (canais.length === 0) {
       refs.homeVazio.classList.remove('oculto');
+      atualizarLegendaGuia('');
       return;
     }
     refs.homeVazio.classList.add('oculto');
 
+    var atual = (estado.player && estado.player.canalAtual) ? estado.player.canalAtual : null;
+
     for (var i = 0; i < canais.length; i++) {
       var canal = canais[i];
-      var cartao = document.createElement('div');
-      cartao.className = 'cartao-canal focavel';
-      cartao.setAttribute('tabindex', '-1');
+      var linha = document.createElement('div');
+      linha.className = 'guia-linha focavel';
+      linha.setAttribute('tabindex', '-1');
+      if (atual && atual.url === canal.url) { linha.className += ' atual'; }
 
-      // Área da ARTE (pôster/logo oficial vindo do servidor). Ocupa o topo do
-      // card, com a marca ao fundo — se a arte falhar, cai no selo com inicial.
-      var arte = document.createElement('div');
-      arte.className = 'cartao-canal-arte';
+      // Número (posição global do canal, em teal quando é o canal no ar).
+      var num = document.createElement('div');
+      num.className = 'guia-num';
+      num.textContent = numeroDoCanal(canal);
+      linha.appendChild(num);
 
-      var inicial = document.createElement('span');
-      inicial.className = 'cartao-canal-inicial';
-      inicial.textContent = (canal.nome.charAt(0) || '?').toUpperCase();
-      arte.appendChild(inicial);
-
+      // Logo pequeno (sem placa branca) + selo com inicial de fallback.
+      var lw = document.createElement('div');
+      lw.className = 'guia-logo';
       if (canal.logo) {
         var img = document.createElement('img');
-        img.className = 'cartao-canal-logo';
+        img.className = 'guia-logo-img';
         img.alt = '';
-        img.onerror = criarTratadorErroLogo(cartao);
+        img.onerror = criarTratadorErroLogo(linha);
         img.src = canal.logo;
-        arte.appendChild(img);
+        lw.appendChild(img);
       } else {
-        cartao.classList.add('sem-logo');
+        linha.classList.add('sem-logo');
       }
-      cartao.appendChild(arte);
+      var ini = document.createElement('span');
+      ini.className = 'guia-logo-inicial';
+      ini.textContent = (canal.nome.charAt(0) || '?').toUpperCase();
+      lw.appendChild(ini);
+      linha.appendChild(lw);
 
-      var info = document.createElement('div');
-      info.className = 'cartao-canal-info';
-      var nomeSpan = document.createElement('span');
-      nomeSpan.className = 'cartao-canal-nome';
-      nomeSpan.textContent = canal.nome;
-      info.appendChild(nomeSpan);
-      cartao.appendChild(info);
+      // Nome + categoria (subtítulo).
+      var meta = document.createElement('div');
+      meta.className = 'guia-meta';
+      var nm = document.createElement('div');
+      nm.className = 'guia-nome';
+      nm.textContent = canal.nome;
+      meta.appendChild(nm);
+      var sub = document.createElement('div');
+      sub.className = 'guia-sub';
+      sub.textContent = canal.categoria || '';
+      meta.appendChild(sub);
+      linha.appendChild(meta);
 
-      cartao.onclick = criarTratadorCliqueCanal(i);
-
-      grade.appendChild(cartao);
-      estado.elementosCanais.push(cartao);
+      linha.onclick = criarTratadorCliqueCanal(i);
+      grade.appendChild(linha);
+      estado.elementosCanais.push(linha);
     }
   }
 
-  function focarCategoriaPorIndice(indice) {
-    var elementos = estado.elementosCategorias;
-    if (indice < 0 || indice > elementos.length - 1) { return; }
-    estado.categoriaIndice = indice;
-    aplicarFoco(elementos[indice]);
+  // Mantém a linha focada visível dentro da grade (scroll vertical manual).
+  function garantirVisivelLinha(indice) {
+    var c = refs.gradeCanais;
+    var el = estado.elementosCanais[indice];
+    if (!c || !el) { return; }
+    var top = el.offsetTop;
+    var bottom = top + el.offsetHeight;
+    if (top < c.scrollTop) {
+      c.scrollTop = top - 12;
+    } else if (bottom > c.scrollTop + c.clientHeight) {
+      c.scrollTop = bottom - c.clientHeight + 12;
+    }
   }
 
   function focarCanalPorIndice(indice) {
     var elementos = estado.elementosCanais;
-    if (elementos.length === 0) { return; }
+    if (elementos.length === 0) { atualizarLegendaGuia(''); return; }
     if (indice < 0) { indice = 0; }
     if (indice > elementos.length - 1) { indice = elementos.length - 1; }
     estado.canalIndice = indice;
     aplicarFoco(elementos[indice]);
+    var canais = canaisDaCategoriaAtual();
+    atualizarLegendaGuia(canais[indice] ? canais[indice].nome : '');
+    garantirVisivelLinha(indice);
   }
 
-  function tratarTeclaCategorias(codigo) {
-    var total = estado.categoriasOrdem.length;
-    if (total === 0) { return; }
-
-    if (codigo === TECLA.CIMA) {
-      var anterior = estado.categoriaIndice - 1;
-      if (anterior < 0) { return; }
-      selecionarCategoria(anterior);
-      focarCategoriaPorIndice(anterior);
-    } else if (codigo === TECLA.BAIXO) {
-      var proximo = estado.categoriaIndice + 1;
-      if (proximo > total - 1) { return; }
-      selecionarCategoria(proximo);
-      focarCategoriaPorIndice(proximo);
-    } else if (codigo === TECLA.DIREITA || codigo === TECLA.OK) {
-      if (estado.elementosCanais.length > 0) {
-        estado.zonaHome = 'canais';
-        // Retoma no último canal focado dentro desta categoria (em vez
-        // de sempre voltar pro índice 0) — focarCanalPorIndice() já
-        // limita o índice aos limites da grade atual.
-        focarCanalPorIndice(estado.canalIndice);
-      }
-    }
+  // Troca de categoria pelas PONTAS (← na 1ª coluna / → na última) — igual à TV,
+  // com "wrap" circular entre categorias.
+  function trocarCategoriaGuia(delta) {
+    var n = estado.categoriasOrdem.length;
+    if (n === 0) { return; }
+    var next = (estado.categoriaIndice + delta) % n;
+    if (next < 0) { next += n; }
+    selecionarCategoria(next);
+    focarCanalPorIndice(0);
   }
 
+  // Navegação da guia (modelo do ChannelBrowser): índice único de canal.
+  //   ↑/↓ = ±3 linhas · ←/→ = canal anterior/próximo, trocando de categoria
+  //   nas pontas · OK = assistir.
   function tratarTeclaGradeCanais(codigo) {
     var total = estado.elementosCanais.length;
-    if (total === 0) { return; }
     var indice = estado.canalIndice;
 
-    if (codigo === TECLA.OK) {
-      selecionarCanalDoGuia(indice);
+    if (total === 0) {
+      if (codigo === TECLA.ESQUERDA) { trocarCategoriaGuia(-1); }
+      else if (codigo === TECLA.DIREITA) { trocarCategoriaGuia(1); }
       return;
     }
 
-    if (codigo === TECLA.ESQUERDA) {
-      if (indice % GRID_COLUNAS === 0) {
-        estado.zonaHome = 'categorias';
-        focarCategoriaPorIndice(estado.categoriaIndice);
-      } else {
-        focarCanalPorIndice(indice - 1);
-      }
-    } else if (codigo === TECLA.DIREITA) {
-      var ultimaColuna = (indice % GRID_COLUNAS === GRID_COLUNAS - 1);
-      if (!ultimaColuna && indice + 1 < total) {
-        focarCanalPorIndice(indice + 1);
-      }
+    if (codigo === TECLA.OK) {
+      selecionarCanalDoGuia(indice);
     } else if (codigo === TECLA.CIMA) {
-      if (indice - GRID_COLUNAS >= 0) {
-        focarCanalPorIndice(indice - GRID_COLUNAS);
-      } else {
-        estado.zonaHome = 'categorias';
-        focarCategoriaPorIndice(estado.categoriaIndice);
-      }
+      if (indice - GRID_COLUNAS >= 0) { focarCanalPorIndice(indice - GRID_COLUNAS); }
     } else if (codigo === TECLA.BAIXO) {
       var alvo = indice + GRID_COLUNAS;
-      if (alvo < total) {
-        focarCanalPorIndice(alvo);
-      } else if (indice !== total - 1) {
-        focarCanalPorIndice(total - 1);
+      if (alvo < total) { focarCanalPorIndice(alvo); }
+      else if (indice !== total - 1) { focarCanalPorIndice(total - 1); }
+    } else if (codigo === TECLA.ESQUERDA) {
+      if (indice % GRID_COLUNAS === 0) { trocarCategoriaGuia(-1); }
+      else { focarCanalPorIndice(indice - 1); }
+    } else if (codigo === TECLA.DIREITA) {
+      if (indice % GRID_COLUNAS === GRID_COLUNAS - 1 || indice >= total - 1) {
+        trocarCategoriaGuia(1);
+      } else {
+        focarCanalPorIndice(indice + 1);
       }
     }
   }
@@ -773,20 +819,11 @@
     }
 
     if (codigo === TECLA.VOLTAR) {
-      if (estado.zonaHome === 'canais') {
-        estado.zonaHome = 'categorias';
-        focarCategoriaPorIndice(estado.categoriaIndice);
-      } else {
-        fecharGuia(); // fecha o guia e volta pro canal em tela cheia
-      }
+      fecharGuia(); // fecha o guia e volta pro canal em tela cheia
       return;
     }
 
-    if (estado.zonaHome === 'categorias') {
-      tratarTeclaCategorias(codigo);
-    } else {
-      tratarTeclaGradeCanais(codigo);
-    }
+    tratarTeclaGradeCanais(codigo);
   }
 
   // --------------------------------------------------------
@@ -847,6 +884,8 @@
     var video = refs.videoPlayer;
     var fonte = refs.videoFonte;
     var url = canal.hls || canal.url;
+
+    estado.player.canalAtual = canal; // marca o "no ar" no guia
 
     esconderErroPlayer();
     refs.playerCarregando.classList.remove('oculto');
@@ -1230,19 +1269,19 @@
   }
 
   function gerarPix() {
-    var nome = (refs.pagNome.value || '').replace(/^\s+|\s+$/g, '');
     var cpf = (refs.pagCpf.value || '').replace(/\D/g, '');
     if (cpf.length !== 11) {
-      exibirErroPagamento('Informe um CPF válido (11 números).');
+      exibirErroPagamento('Digite um CPF válido (11 números).');
       aplicarFoco(refs.pagCpf);
       return;
     }
     refs.pagamentoErro.classList.add('oculto');
-    refs.botaoGerarPix.textContent = 'Gerando…';
+    var rotuloBotao = refs.botaoGerarPix.getElementsByTagName('span')[0];
+    if (rotuloBotao) { rotuloBotao.textContent = 'Gerando…'; }
 
     var deviceId = obterDeviceId();
-    MareApi.iniciarPix(deviceId, nome, cpf).then(function (res) {
-      refs.botaoGerarPix.textContent = 'Gerar PIX';
+    MareApi.iniciarPix(deviceId, '', cpf).then(function (res) {
+      if (rotuloBotao) { rotuloBotao.textContent = 'Gerar QR Code PIX'; }
       var d = res.dados || {};
       if (res.status >= 200 && res.status < 300 && d.qrCodeBase64) {
         mostrarQrPix(d, deviceId);
@@ -1250,7 +1289,7 @@
         exibirErroPagamento(mensagemErroPix(d.error));
       }
     }).catch(function () {
-      refs.botaoGerarPix.textContent = 'Gerar PIX';
+      if (rotuloBotao) { rotuloBotao.textContent = 'Gerar QR Code PIX'; }
       exibirErroPagamento('Sem conexão. Tente novamente.');
     });
   }
@@ -1258,9 +1297,14 @@
   function mostrarQrPix(d, deviceId) {
     refs.pagamentoForm.classList.add('oculto');
     refs.pagamentoQr.classList.remove('oculto');
-    refs.pagamentoValor.textContent = d.amountCents ? formatarReais(d.amountCents) : '';
+    // "plano · preço" em teal (igual à TV): planName · priceLabel
+    var c = estado.config || {};
+    var plano = c.planName || 'Assinatura';
+    var preco = d.amountCents ? formatarReais(d.amountCents)
+      : (c.priceCents ? formatarReais(c.priceCents) : '');
+    refs.pagamentoValor.textContent = preco ? (plano + ' · ' + preco) : plano;
     refs.pagamentoQrImg.src = 'data:image/png;base64,' + d.qrCodeBase64;
-    refs.pagamentoStatusTexto.textContent = 'Aguardando pagamento…';
+    refs.pagamentoStatusTexto.textContent = 'Aguardando o pagamento…';
     aplicarFoco(refs.botaoCancelarPix);
     iniciarPollPagamento(d.paymentId, deviceId);
   }
@@ -1309,13 +1353,13 @@
     if (!refs.pagamentoQr.classList.contains('oculto')) {
       return [refs.botaoCancelarPix];
     }
-    var lista = [refs.pagNome, refs.pagCpf, refs.botaoGerarPix, refs.botaoVoltarLogin];
+    var lista = [refs.pagCpf, refs.botaoGerarPix, refs.botaoVoltarLogin];
     return lista;
   }
 
   function tratarTeclaPagamento(codigo, evento) {
     var ativo = document.activeElement;
-    var emCampo = (ativo === refs.pagNome || ativo === refs.pagCpf);
+    var emCampo = (ativo === refs.pagCpf);
 
     if (codigo === TECLA.VOLTAR) {
       evento.preventDefault();
@@ -1337,9 +1381,7 @@
     } else if (codigo === TECLA.OK) {
       evento.preventDefault();
       var el = lista[idx];
-      if (el === refs.pagNome) {
-        aplicarFoco(refs.pagCpf);
-      } else if (el === refs.pagCpf) {
+      if (el === refs.pagCpf) {
         aplicarFoco(refs.botaoGerarPix);
       } else if (el && typeof el.click === 'function') {
         el.click();
@@ -1365,6 +1407,8 @@
 
     refs.listaCategorias = document.getElementById('lista-categorias');
     refs.gradeCanais = document.getElementById('grade-canais');
+    refs.guiaRelogio = document.getElementById('guia-relogio');
+    refs.guiaCanalNome = document.getElementById('guia-canal-nome');
     refs.homeVazio = document.getElementById('home-vazio');
     refs.homeCarregando = document.getElementById('home-carregando');
     refs.homeErro = document.getElementById('home-erro');
@@ -1387,7 +1431,6 @@
     // Pagamento (PIX)
     refs.pagamentoPlano = document.getElementById('pagamento-plano');
     refs.pagamentoForm = document.getElementById('pagamento-form');
-    refs.pagNome = document.getElementById('pag-nome');
     refs.pagCpf = document.getElementById('pag-cpf');
     refs.pagamentoErro = document.getElementById('pagamento-erro');
     refs.botaoGerarPix = document.getElementById('botao-gerar-pix');

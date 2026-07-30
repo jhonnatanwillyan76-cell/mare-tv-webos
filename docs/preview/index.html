@@ -13,79 +13,87 @@
      Campos de usuário/senha usam <input> nativo: ao focar (via
      controle remoto) o teclado virtual da LG abre sozinho.
      ============================================================ -->
-<section id="tela-login" class="tela tela-login">
-  <div class="login-caixa">
+<section id="tela-login" class="tela tela-gate">
+  <div class="gate-conteudo">
 
-    <div class="marca-logo" aria-hidden="true">
-      <img class="marca-logo-img" src="logo_wide.png" alt="">
+    <div class="gate-header">
+      <img class="gate-logo" src="app_logo.png" alt="">
+      <h1 class="gate-title">Maré TV</h1>
+      <p class="gate-eyebrow">ENTRAR</p>
     </div>
-
-    <h1 class="login-titulo">Maré TV</h1>
-    <p class="login-subtitulo">Entre com sua conta para assistir ao vivo</p>
 
     <div id="login-verificando" class="login-verificando oculto">
       <span class="spinner" aria-hidden="true"></span>
       <span>Verificando sua sessão…</span>
     </div>
 
-    <div id="login-form" class="login-form">
-      <label class="campo-rotulo" for="campo-usuario">Usuário</label>
-      <input id="campo-usuario" class="campo-entrada focavel" type="text"
-             tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div id="login-form" class="gate-form">
+      <div class="campo">
+        <label class="campo-rotulo" for="campo-usuario">Usuário</label>
+        <div class="campo-caixa">
+          <svg class="campo-icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <input id="campo-usuario" class="campo-entrada focavel" type="text"
+                 tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
 
-      <label class="campo-rotulo" for="campo-senha">Senha</label>
-      <input id="campo-senha" class="campo-entrada focavel" type="password"
-             tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="campo">
+        <label class="campo-rotulo" for="campo-senha">Senha</label>
+        <div class="campo-caixa">
+          <svg class="campo-icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17a2 2 0 0 0 2-2 2 2 0 0 0-4 0 2 2 0 0 0 2 2zm6-9h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM8.9 6a3.1 3.1 0 0 1 6.2 0v2H8.9V6z"/></svg>
+          <input id="campo-senha" class="campo-entrada focavel" type="password"
+                 tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+      </div>
 
-      <p id="login-erro" class="login-erro oculto"></p>
+      <p id="login-erro" class="gate-erro oculto"></p>
 
-      <button id="botao-entrar" type="button" class="botao-entrar focavel" tabindex="-1">
-        Entrar
+      <button id="botao-entrar" type="button" class="botao-primario focavel" tabindex="-1">
+        <svg class="botao-icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 7 9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-8v2h8v14z"/></svg>
+        <span>Entrar</span>
       </button>
 
-      <div class="login-ou"><span>ou</span></div>
-
       <button id="botao-assinar" type="button" class="botao-secundario focavel" tabindex="-1">
-        Novo por aqui? Assinar
+        Ainda não tenho — Assinar
       </button>
     </div>
 
-    <p class="login-dica">Use as setas do controle para navegar e OK para confirmar</p>
   </div>
 </section>
 
 <!-- ============================================================
      TELA 2 — HOME (categorias + grade de canais)
      ============================================================ -->
-<section id="tela-home" class="tela tela-home oculto">
-  <header class="home-cabecalho">
-    <div class="marca-logo marca-logo--pequena" aria-hidden="true">
-      <img class="marca-logo-img-pequena" src="icon.png" alt="">
+<section id="tela-home" class="tela tela-guia oculto">
+  <!-- Faixa de categorias (horizontal, chips) + relógio — igual ao ChannelBrowser -->
+  <div class="guia-topo">
+    <div id="lista-categorias" class="guia-faixa" aria-label="Categorias"></div>
+    <div id="guia-relogio" class="guia-relogio"></div>
+  </div>
+
+  <!-- Grade densa de 3 colunas de LINHAS (número + logo + nome + categoria) -->
+  <div class="guia-corpo">
+    <div id="grade-canais" class="guia-grade"></div>
+    <p id="home-vazio" class="home-mensagem oculto">Nenhum canal nesta categoria</p>
+    <div id="home-carregando" class="home-mensagem home-carregando oculto">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Carregando canais…</span>
     </div>
-    <span class="home-marca-texto">Maré TV</span>
-    <span class="pill-ao-vivo">AO VIVO</span>
-  </header>
-
-  <div class="home-corpo">
-    <nav id="lista-categorias" class="coluna-categorias" aria-label="Categorias"></nav>
-
-    <div class="coluna-canais-wrap">
-      <div id="grade-canais" class="grade-canais"></div>
-      <p id="home-vazio" class="home-mensagem oculto">Nenhum canal encontrado nesta categoria.</p>
+    <div id="home-erro" class="home-mensagem home-erro oculto">
+      <p id="home-erro-texto">Não foi possível carregar os canais.</p>
+      <button id="home-erro-botao" type="button" class="botao-primario focavel" tabindex="-1">Tentar novamente</button>
     </div>
   </div>
 
-  <div id="home-carregando" class="home-mensagem home-carregando oculto">
-    <span class="spinner" aria-hidden="true"></span>
-    <span>Carregando canais…</span>
-  </div>
-
-  <div id="home-erro" class="home-mensagem home-erro oculto">
-    <p id="home-erro-texto">Não foi possível carregar os canais.</p>
-    <button id="home-erro-botao" type="button" class="botao-entrar focavel" tabindex="-1">Tentar novamente</button>
-  </div>
-
-  <footer class="home-rodape">◀ ▶ ▲ ▼ para navegar · OK para assistir</footer>
+  <!-- Rodapé com o canal selecionado + dicas de teclas (igual à TV) -->
+  <footer class="guia-legenda">
+    <span id="guia-canal-nome" class="guia-legenda-nome"></span>
+    <span class="guia-legenda-chaves">
+      <span class="pinfo-key">OK</span> Assistir
+      <span class="pinfo-key">← →</span> Trocar categoria nas pontas
+      <span class="pinfo-key">Voltar</span> Fechar
+    </span>
+  </footer>
 </section>
 
 <!-- ============================================================
@@ -148,39 +156,50 @@
 <!-- ============================================================
      TELA — PAGAMENTO (assinar via PIX)
      ============================================================ -->
-<section id="tela-pagamento" class="tela tela-pagamento oculto">
-  <div class="pagamento-caixa">
-    <div class="marca-logo" aria-hidden="true">
-      <img class="marca-logo-img" src="logo_wide.png" alt="">
-    </div>
-    <h1 class="pagamento-titulo">Assinar a Maré TV</h1>
-    <p class="pagamento-sub" id="pagamento-plano">Assine e assista ao vivo</p>
+<section id="tela-pagamento" class="tela tela-gate oculto">
+  <div class="gate-conteudo">
 
-    <div id="pagamento-form" class="pagamento-form">
-      <label class="campo-rotulo" for="pag-nome">Nome (opcional)</label>
-      <input id="pag-nome" class="campo-entrada focavel" type="text" tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div id="pagamento-form" class="gate-form">
+      <div class="gate-header">
+        <img class="gate-logo" src="app_logo.png" alt="">
+        <h1 class="gate-title">Maré TV</h1>
+        <p class="gate-eyebrow">ASSINATURA</p>
+      </div>
 
-      <label class="campo-rotulo" for="pag-cpf">CPF (só números)</label>
-      <input id="pag-cpf" class="campo-entrada focavel" type="text" inputmode="numeric" tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+      <p class="gate-lead">Pague por PIX e seu acesso é liberado na hora.</p>
 
-      <p id="pagamento-erro" class="login-erro oculto"></p>
+      <div class="campo">
+        <label class="campo-rotulo" for="pag-cpf">CPF do pagador</label>
+        <div class="campo-caixa">
+          <svg class="campo-icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM8 7.5A2.5 2.5 0 1 1 8 12.5 2.5 2.5 0 0 1 8 7.5zM12.5 17H3.5v-.9c0-1.5 3-2.35 4.5-2.35s4.5.85 4.5 2.35v.9zM20 15h-5v-1.5h5V15zm0-3h-5v-1.5h5V12zm0-3h-5V7.5h5V9z"/></svg>
+          <input id="pag-cpf" class="campo-entrada focavel" type="text" inputmode="numeric" tabindex="-1" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <p class="campo-ajuda">O banco exige o CPF de quem paga para emitir o PIX. Seu login (usuário e senha) é criado automaticamente.</p>
+      </div>
 
-      <button id="botao-gerar-pix" type="button" class="botao-entrar focavel" tabindex="-1">Gerar PIX</button>
+      <p id="pagamento-erro" class="gate-erro oculto"></p>
+
+      <button id="botao-gerar-pix" type="button" class="botao-primario focavel" tabindex="-1">
+        <svg class="botao-icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM13 13h2v2h-2zM17 13h2v2h-2zM15 15h2v2h-2zM13 17h2v2h-2zM17 17h2v2h-2zM19 15h2v2h-2zM15 19h2v2h-2zM19 19h2v2h-2z"/></svg>
+        <span>Gerar QR Code PIX</span>
+      </button>
       <button id="botao-voltar-login" type="button" class="botao-secundario focavel" tabindex="-1">Voltar ao login</button>
     </div>
 
     <div id="pagamento-qr" class="pagamento-qr oculto">
+      <h1 class="pagamento-titulo">Escaneie com o app do seu banco</h1>
       <p class="pagamento-valor" id="pagamento-valor"></p>
       <div class="pagamento-qr-moldura">
         <img id="pagamento-qr-img" class="pagamento-qr-img" alt="QR do PIX">
       </div>
-      <p class="pagamento-instr">Abra o app do seu banco, escaneie o QR e pague.<br>A tela entra sozinha quando o pagamento for confirmado.</p>
       <div class="pagamento-status">
         <span class="spinner" aria-hidden="true"></span>
-        <span id="pagamento-status-texto">Aguardando pagamento…</span>
+        <span id="pagamento-status-texto">Aguardando o pagamento…</span>
       </div>
+      <p class="pagamento-instr">Assim que cair, seu login aparece aqui automaticamente.</p>
       <button id="botao-cancelar-pix" type="button" class="botao-secundario focavel" tabindex="-1">Cancelar</button>
     </div>
+
   </div>
 </section>
 
